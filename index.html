@@ -6,7 +6,6 @@
     <title>Hệ thống Quản lý - Trường Tiểu học Lê Văn Việt</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Thêm thư viện Chart.js để vẽ biểu đồ -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
@@ -32,11 +31,9 @@
         select { -webkit-appearance: none; -moz-appearance: none; appearance: none; }
         .sticky-col { position: sticky; left: 0; background: white; z-index: 10; border-right: 2px solid #e5e7eb; }
         
-        /* Bổ sung Style cho Quản lý nhiệm vụ */
         .card-stats { border-radius: 8px; color: #fff; text-align: center; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .card-stats h3 { margin: 0; font-size: 16px; font-weight: normal; }
         .card-stats .number { font-size: 32px; font-weight: bold; margin-top: 10px; }
-        .badge { padding: 4px 8px; border-radius: 12px; font-size: 12px; color: white; }
     </style>
 </head>
 <body>
@@ -133,6 +130,46 @@
                     </div>
                     
                     <div class="p-6">
+
+                        <!-- ================= BÁO CÁO THỐNG KÊ (ADMIN ONLY) ================= -->
+                        <div id="report-area" class="hidden">
+                            <div class="mb-4 text-gray-700 bg-blue-50 p-4 rounded-lg border border-blue-100 flex items-start">
+                                <i class="fas fa-chart-line text-blue-500 mt-1 mr-3 text-lg"></i>
+                                <div class="text-sm leading-relaxed">
+                                    <b>Báo Cáo Tổng Hợp:</b> Hiển thị cái nhìn tổng quan về khối lượng công việc, tỷ lệ hoàn thành nhiệm vụ và Kết quả đánh giá KPI của toàn bộ giáo viên, nhân viên trên hệ thống.
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                                <div class="card-stats" style="background: #8e44ad;"><h3>Tổng số Tài khoản</h3><div class="number" id="report-total-users">0</div></div>
+                                <div class="card-stats" style="background: #34495e;"><h3>Tổng Nhiệm vụ</h3><div class="number" id="report-total-tasks">0</div></div>
+                                <div class="card-stats" style="background: #2ecc71;"><h3>Nhiệm vụ Hoàn thành</h3><div class="number" id="report-completed-tasks">0</div></div>
+                                <div class="card-stats" style="background: #f39c12;"><h3>Điểm KPI Trung bình</h3><div class="number" id="report-avg-kpi">0</div></div>
+                            </div>
+
+                            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                                <div class="lg:col-span-2 bg-white rounded border border-gray-200 shadow-sm overflow-x-auto">
+                                    <table class="data-table" id="report-table">
+                                        <thead class="bg-[#eaf4f4] text-[#00695c]">
+                                            <tr>
+                                                <th class="w-12 text-center">STT</th>
+                                                <th>Giáo viên / Nhân viên</th>
+                                                <th class="text-center w-24">Tổng Task</th>
+                                                <th class="text-center w-24">Hoàn thành</th>
+                                                <th class="text-center w-24">Điểm KPI</th>
+                                                <th class="text-center">Xếp loại</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="report-tbody">
+                                            <!-- Render via JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="lg:col-span-1 bg-white p-4 rounded border border-gray-200 shadow-sm" style="min-height: 350px;">
+                                    <canvas id="reportChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
                         
                         <!-- ================= QUẢN LÝ TÀI KHOẢN (ADMIN ONLY) ================= -->
                         <div id="account-management-area" class="hidden">
@@ -198,7 +235,7 @@
                                 <table class="data-table" id="table-chua-minh-chung"><thead class="bg-[#eaf4f4] text-[#00695c]"><tr><th>Tên nhiệm vụ</th><th>Người phụ trách</th><th>Ngày giao</th><th>Hạn chót</th></tr></thead><tbody></tbody></table>
                             </div>
 
-                            <!-- TẠO NHIỆM VỤ / GIAO VIỆC -->
+                            <!-- TẠO NHIỆM VỤ / GIAO VIỆC (Mở cho tất cả User) -->
                             <div id="view-qlnv_tao" class="hidden">
                                 <div class="max-w-xl bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
                                     <div class="mb-4">
@@ -407,6 +444,7 @@
         // 1. CẤU TRÚC MENU ĐA CẤP CÓ PHÂN QUYỀN
         // ==============================================================================
         const menus = [
+            { id: 'baocaothongke', title: 'Báo cáo tổng hợp', icon: 'fa-chart-bar', adminOnly: true },
             { id: 'quanlytaikhoan', title: 'Quản lý tài khoản', icon: 'fa-users-cog', adminOnly: true }, 
             { id: 'thongtincanhan', title: 'Thông tin cá nhân', icon: 'fa-user-circle' },
             { 
@@ -498,7 +536,7 @@
             ]}
         ];
 
-        // Khởi tạo sample tasks cho Quản lý nhiệm vụ (Đã có trường assignDate)
+        // Khởi tạo sample tasks
         const defaultTasks = [
             { id: 1, name: "Triển khai lớp học LEGO Education", assignee: "Nguyễn V. H.", assignDate: "2026-09-01", deadline: "2026-10-15", status: "Đang thực hiện", evidence: false, fileName: "", approved: false },
             { id: 2, name: "Nộp danh sách thi ICDL", assignee: "Tổ Tin Học", assignDate: "2026-08-20", deadline: "2026-09-01", status: "Đang thực hiện", evidence: false, fileName: "", approved: false },
@@ -521,13 +559,28 @@
 
             if (!localStorage.getItem('pages_db')) localStorage.setItem('pages_db', JSON.stringify({}));
             if (!localStorage.getItem('kpi_criteria_db_v4')) localStorage.setItem('kpi_criteria_db_v4', JSON.stringify(defaultCriteria));
-            if (!localStorage.getItem('tasks_db')) localStorage.setItem('tasks_db', JSON.stringify(defaultTasks));
+            if (!localStorage.getItem('tasks_db_v2')) {
+                // Khởi tạo tasks_db phân mảnh theo từng user
+                let initTasks = { 'admin': defaultTasks, 'giaovien1': defaultTasks };
+                localStorage.setItem('tasks_db_v2', JSON.stringify(initTasks));
+            }
         };
         initDB();
 
         function getCriteriaData() { return JSON.parse(localStorage.getItem('kpi_criteria_db_v4')); }
-        function getTasksData() { return JSON.parse(localStorage.getItem('tasks_db')); }
-        function saveTasksData(tasks) { localStorage.setItem('tasks_db', JSON.stringify(tasks)); }
+        
+        // --- DATA ISOLATION CHO TASKS ---
+        function getTasksData() { 
+            const targetU = getViewingUser();
+            const db = JSON.parse(localStorage.getItem('tasks_db_v2')) || {};
+            return db[targetU] || []; 
+        }
+        function saveTasksData(tasks) { 
+            const targetU = getViewingUser();
+            const db = JSON.parse(localStorage.getItem('tasks_db_v2')) || {};
+            db[targetU] = tasks;
+            localStorage.setItem('tasks_db_v2', JSON.stringify(db)); 
+        }
 
         let currentUser = null;
         let currentPageId = 'thongtincanhan';
@@ -560,7 +613,7 @@
                 document.getElementById('dashboard-screen').classList.remove('hidden');
                 if (users[u].role === 'admin') {
                     document.getElementById('header-role').innerHTML = '<span class="bg-red-500 text-white px-2 py-0.5 rounded">Quản trị viên</span>';
-                    populateAdminDropdown(); currentPageId = 'quanlytaikhoan';
+                    populateAdminDropdown(); currentPageId = 'baocaothongke';
                 } else {
                     document.getElementById('admin-controls').classList.add('hidden');
                     document.getElementById('header-role').textContent = 'Hệ thống Quản lý Nội bộ';
@@ -603,7 +656,7 @@
             if (currentPageId === 'thongtincanhan') loadProfile();
             else if (isEvalMenu(currentPageId)) handleEvalMenuSelection(currentPageId);
             else if (isTaskMenu(currentPageId)) handleTaskMenuSelection(currentPageId);
-            else if (currentPageId !== 'quanlytaikhoan') loadPageContent(currentPageId);
+            else if (currentPageId !== 'quanlytaikhoan' && currentPageId !== 'baocaothongke') loadPageContent(currentPageId);
         }
 
         function toggleMenu(menuId) {
@@ -679,7 +732,7 @@
             const users = JSON.parse(localStorage.getItem('users_db'));
             const isAdmin = users[currentUser].role === 'admin';
             const adminControls = document.getElementById('admin-controls');
-            if (isAdmin && menuId !== 'quanlytaikhoan') adminControls.classList.remove('hidden');
+            if (isAdmin && menuId !== 'quanlytaikhoan' && menuId !== 'baocaothongke') adminControls.classList.remove('hidden');
             else adminControls.classList.add('hidden');
             
             document.getElementById('personal-info-area').classList.add('hidden');
@@ -688,12 +741,114 @@
             document.getElementById('account-management-area').classList.add('hidden');
             document.getElementById('evaluation-area').classList.add('hidden');
             document.getElementById('task-management-area').classList.add('hidden');
+            document.getElementById('report-area').classList.add('hidden');
 
-            if (menuId === 'quanlytaikhoan') { document.getElementById('account-management-area').classList.remove('hidden'); renderUserList(); } 
+            if (menuId === 'baocaothongke') { document.getElementById('report-area').classList.remove('hidden'); loadReportData(); }
+            else if (menuId === 'quanlytaikhoan') { document.getElementById('account-management-area').classList.remove('hidden'); renderUserList(); } 
             else if (menuId === 'thongtincanhan') { document.getElementById('personal-info-area').classList.remove('hidden'); loadProfile(); } 
             else if (isEvalMenu(menuId)) { document.getElementById('evaluation-area').classList.remove('hidden'); handleEvalMenuSelection(menuId); } 
             else if (isTaskMenu(menuId)) { document.getElementById('task-management-area').classList.remove('hidden'); handleTaskMenuSelection(menuId); }
             else { document.getElementById('content-editor-area').classList.remove('hidden'); loadPageContent(menuId); }
+        }
+
+        // ==============================================================================
+        // BÁO CÁO THỐNG KÊ (DÀNH CHO ADMIN)
+        // ==============================================================================
+        function loadReportData() {
+            const users = JSON.parse(localStorage.getItem('users_db')) || {};
+            const tasksDb = JSON.parse(localStorage.getItem('tasks_db_v2')) || {};
+            const pagesDb = JSON.parse(localStorage.getItem('pages_db')) || {};
+
+            let totalUsers = 0;
+            let totalTasks = 0;
+            let totalCompletedTasks = 0;
+            let sumKpi = 0;
+            let evaluatedUsersCount = 0;
+
+            let tbodyHtml = '';
+            let chartLabels = [];
+            let chartData = [];
+
+            let stt = 1;
+            for (let u in users) {
+                if (users[u].role === 'admin') continue; // Loại Admin khỏi thống kê
+
+                totalUsers++;
+                let uTasks = tasksDb[u] || [];
+                let uTotalT = uTasks.length;
+                let uCompT = uTasks.filter(t => t.status === 'Hoàn thành' || t.approved).length; 
+                
+                totalTasks += uTotalT;
+                totalCompletedTasks += uCompT;
+
+                let uEval = (pagesDb[u] && pagesDb[u]['quanlydanhgia_v4']) ? pagesDb[u]['quanlydanhgia_v4'] : null;
+                let finalScore = 0;
+                let rank = '<span class="text-gray-400">Chưa ĐG</span>';
+                
+                if (uEval && uEval.finalKpiScore !== undefined) {
+                    let kpiScore = Math.round(uEval.finalKpiScore * 100) / 100;
+                    sumKpi += kpiScore;
+                    evaluatedUsersCount++;
+
+                    let sumA = 0;
+                    if(uEval.partA) Object.values(uEval.partA).forEach(v => sumA += v);
+                    let sumC = uEval.partC || 0;
+                    let totalScore = sumA + kpiScore + sumC;
+                    if (totalScore > 107) totalScore = 107;
+                    finalScore = Math.round(totalScore * 100) / 100;
+
+                    if (totalScore >= 90) rank = '<span class="text-green-600 font-bold">Xuất sắc</span>';
+                    else if (totalScore >= 80) rank = '<span class="text-blue-600 font-bold">Tốt</span>';
+                    else if (totalScore >= 65) rank = '<span class="text-yellow-600 font-bold">Hoàn thành</span>';
+                    else rank = '<span class="text-red-600 font-bold">Không H.Thành</span>';
+                    
+                    chartLabels.push(users[u].fullName || u);
+                    chartData.push(kpiScore); 
+                } else {
+                    chartLabels.push(users[u].fullName || u);
+                    chartData.push(0);
+                }
+
+                let taskRate = uTotalT > 0 ? Math.round((uCompT / uTotalT) * 100) + '%' : '0%';
+
+                tbodyHtml += `<tr class="hover:bg-gray-50">
+                    <td class="text-center">${stt++}</td>
+                    <td class="font-bold text-gray-700">${users[u].fullName || u}</td>
+                    <td class="text-center">${uTotalT}</td>
+                    <td class="text-center text-green-600 font-bold">${uCompT} (${taskRate})</td>
+                    <td class="text-center font-bold text-blue-600">${finalScore.toFixed(2)}</td>
+                    <td class="text-center">${rank}</td>
+                </tr>`;
+            }
+
+            document.getElementById('report-total-users').textContent = totalUsers;
+            document.getElementById('report-total-tasks').textContent = totalTasks;
+            document.getElementById('report-completed-tasks').textContent = totalCompletedTasks;
+            let avgKpi = evaluatedUsersCount > 0 ? (sumKpi / evaluatedUsersCount).toFixed(2) : '0.00';
+            document.getElementById('report-avg-kpi').textContent = avgKpi;
+
+            document.getElementById('report-tbody').innerHTML = tbodyHtml;
+
+            // Draw Chart
+            if (window.reportChartInstance) window.reportChartInstance.destroy();
+            const ctx = document.getElementById('reportChart').getContext('2d');
+            window.reportChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: 'Điểm số KPI trung bình đạt được',
+                        data: chartData,
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, max: 70 } },
+                    plugins: { legend: { display: false }, title: { display: true, text: 'Thống kê Điểm KPI theo Giáo viên' } }
+                }
+            });
         }
 
         // ==============================================================================
