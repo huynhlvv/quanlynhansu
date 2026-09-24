@@ -22,7 +22,6 @@
             pointer-events: none;
         }
         .sidebar-item { transition: all 0.2s; cursor: pointer; }
-        .sidebar-item:hover, .sidebar-item.active { background-color: rgba(0,0,0,0.2); border-left: 4px solid #fff; }
         .hidden { display: none !important; }
         
         .data-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
@@ -94,7 +93,7 @@
 
         <div class="flex flex-1 overflow-hidden">
             <!-- Sidebar -->
-            <aside class="w-64 bg-sidebar text-white flex-shrink-0 flex flex-col overflow-y-auto z-0">
+            <aside class="w-64 bg-sidebar text-white flex-shrink-0 flex flex-col overflow-y-auto z-0 select-none">
                 <div class="p-4">
                     <div class="bg-white/20 rounded flex items-center px-3 py-2 mb-4">
                         <i class="fas fa-search text-gray-300 mr-2"></i>
@@ -160,7 +159,7 @@
                             </div>
                         </div>
 
-                        <!-- 2. Khu vực Đánh giá KPI (Tính theo Tiến độ & Chất lượng) -->
+                        <!-- 2. Khu vực Đánh giá KPI -->
                         <div id="evaluation-area" class="hidden">
                             <!-- Chế độ xem & đánh giá -->
                             <div id="eval-main-view">
@@ -171,7 +170,7 @@
                                             <b>Hướng dẫn đánh giá:</b> Chọn mức độ hoàn thành dựa trên Tiến độ và Chất lượng công việc. Hệ thống tự động tính toán:
                                             <ul class="list-disc ml-5 mt-1 text-gray-600">
                                                 <li><b>Điểm thực hiện</b> = Điểm chuẩn × [ (30% × Tiến độ) + (70% × Kết quả) ]</li>
-                                                <li><b>Điểm quy đổi (KPI)</b> = Điểm thực hiện × Hệ số độ khó</li>
+                                                <li><b>Điểm KPI</b> = Điểm thực hiện × Hệ số độ khó</li>
                                             </ul>
                                         </div>
                                     </div>
@@ -225,7 +224,7 @@
                             
                             <!-- Chế độ chỉnh sửa Bộ Tiêu Chí (Chỉ Admin) -->
                             <div id="criteria-edit-view" class="hidden">
-                                <h3 class="text-lg font-bold text-gray-800 mb-4 border-l-4 border-indigo-600 pl-3">CHỈNH SỬA BỘ TIÊU CHÍ (GIÁO VIÊN TIN HỌC)</h3>
+                                <h3 class="text-lg font-bold text-gray-800 mb-4 border-l-4 border-indigo-600 pl-3">CHỈNH SỬA BỘ TIÊU CHÍ</h3>
                                 <div class="bg-indigo-50 text-indigo-800 p-3 rounded mb-4 text-sm border border-indigo-200">
                                     <i class="fas fa-info-circle mr-1"></i> Admin có thể thay đổi Điểm chuẩn và Hệ số độ khó. <b>Lưu ý:</b> Tổng các Điểm chuẩn nên là 100 điểm để chuẩn hóa kết quả xếp loại.
                                 </div>
@@ -331,8 +330,52 @@
     </div>
 
     <script>
-        // --- 1. HỆ THỐNG DỮ LIỆU LOCALSTORAGE ---
-        // Bộ tiêu chí mới có: base (Điểm chuẩn), diff (Hệ số độ khó)
+        // --- 1. CẤU TRÚC MENU MỚI THEO YÊU CẦU ---
+        const menus = [
+            { id: 'quanlytaikhoan', title: 'Quản lý tài khoản', icon: 'fa-users-cog', adminOnly: true }, 
+            { id: 'thongtincanhan', title: 'Thông tin cá nhân', icon: 'fa-user-circle' },
+            { 
+                id: 'banggiamsat', title: 'Bảng giám sát', icon: 'fa-chart-pie',
+                children: [
+                    { id: 'bgs_tong', title: 'Tổng nhiệm vụ' },
+                    { id: 'bgs_dangthuchien', title: 'Đang thực hiện' },
+                    { id: 'bgs_sapdenhan', title: 'Sắp đến hạn' },
+                    { id: 'bgs_quahan', title: 'Quá hạn' },
+                    { id: 'bgs_chuaminhchung', title: 'Chưa có minh chứng' }
+                ]
+            },
+            { 
+                id: 'quanlynhiemvu', title: 'Quản lý nhiệm vụ', icon: 'fa-clipboard-list',
+                children: [
+                    { id: 'qlnv_tao', title: 'Tạo nhiệm vụ' },
+                    { id: 'qlnv_giao', title: 'Giao việc' },
+                    { id: 'qlnv_tiendo', title: 'Cập nhật tiến độ' },
+                    { id: 'qlnv_minhchung', title: 'Nộp minh chứng' },
+                    { id: 'qlnv_nghiemthu', title: 'Nghiệm thu' }
+                ]
+            },
+            { 
+                id: 'quanlydanhgia', title: 'Đánh giá cán bộ', icon: 'fa-star',
+                children: [
+                    { id: 'dg_diemchuan', title: 'Điểm chuẩn' },
+                    { id: 'dg_tiendo', title: 'Tiến độ 30%' },
+                    { id: 'dg_ketqua', title: 'Kết quả 70%' },
+                    { id: 'dg_hesokho', title: 'Hệ số khó' },
+                    { id: 'dg_diemkpi', title: 'Điểm KPI' }
+                ]
+            },
+            { id: 'quanlyphonghop', title: 'Phòng họp', icon: 'fa-door-open' },
+            { id: 'lichhop', title: 'Lịch họp', icon: 'fa-calendar-alt' },
+            { id: 'quanlyphuongtien', title: 'Phương tiện', icon: 'fa-car' },
+            { id: 'quanlythietbi', title: 'Thiết bị', icon: 'fa-desktop' },
+            { id: 'luutrudulieu', title: 'Lưu trữ dữ liệu', icon: 'fa-database' },
+            { id: 'danhba', title: 'Danh bạ', icon: 'fa-address-book' }
+        ];
+
+        // Mảng lưu trạng thái thư mục đang mở
+        let expandedMenus = ['quanlydanhgia'];
+
+        // --- BỘ TIÊU CHÍ ĐÁNH GIÁ MẶC ĐỊNH ---
         const defaultCriteria = [
             { group: "I. NHIỆM VỤ CHUYÊN MÔN GIẢNG DẠY", items: [
                 { id: 'c1', text: "1. Thực hiện đầy đủ chương trình môn Tin học", base: 8, diff: 1.0 },
@@ -367,6 +410,7 @@
             ]}
         ];
 
+        // --- KHỞI TẠO DỮ LIỆU ---
         const initDB = () => {
             let users = JSON.parse(localStorage.getItem('users_db')) || {};
             const defaultUsers = [
@@ -387,33 +431,14 @@
             });
             if (updated) localStorage.setItem('users_db', JSON.stringify(users));
 
-            let pages = JSON.parse(localStorage.getItem('pages_db')) || {};
-            if (Object.keys(pages).length === 0) localStorage.setItem('pages_db', JSON.stringify({}));
-
-            if (!localStorage.getItem('kpi_criteria_db_v2')) {
-                localStorage.setItem('kpi_criteria_db_v2', JSON.stringify(defaultCriteria));
-            }
+            if (!localStorage.getItem('pages_db')) localStorage.setItem('pages_db', JSON.stringify({}));
+            if (!localStorage.getItem('kpi_criteria_db_v2')) localStorage.setItem('kpi_criteria_db_v2', JSON.stringify(defaultCriteria));
         };
         initDB();
 
         function getCriteriaData() {
             return JSON.parse(localStorage.getItem('kpi_criteria_db_v2'));
         }
-
-        // --- CÁC DANH MỤC MENU BÊN TRÁI GỐC ---
-        const menus = [
-            { id: 'quanlytaikhoan', title: 'Quản lý tài khoản', icon: 'fa-users-cog', adminOnly: true }, 
-            { id: 'thongtincanhan', title: 'Thông tin cá nhân', icon: 'fa-user-circle' },
-            { id: 'banggiamsat', title: 'Bảng giám sát', icon: 'fa-border-all' },
-            { id: 'quanlynhiemvu', title: 'Quản lý nhiệm vụ', icon: 'fa-clipboard-list' },
-            { id: 'quanlydanhgia', title: 'Quản lý đánh giá cán bộ', icon: 'fa-tasks' },
-            { id: 'quanlyphonghop', title: 'Quản lý phòng họp', icon: 'fa-door-open' },
-            { id: 'lichhop', title: 'Lịch họp', icon: 'fa-calendar-alt' },
-            { id: 'quanlyphuongtien', title: 'Quản lý phương tiện', icon: 'fa-car' },
-            { id: 'quanlythietbi', title: 'Quản lý thiết bị', icon: 'fa-desktop' },
-            { id: 'luutrudulieu', title: 'Lưu trữ dữ liệu', icon: 'fa-database' },
-            { id: 'danhba', title: 'Danh bạ', icon: 'fa-address-book' }
-        ];
 
         let currentUser = null;
         let currentPageId = 'thongtincanhan';
@@ -426,6 +451,10 @@
                 return selector ? (selector.value || currentUser) : currentUser;
             }
             return currentUser;
+        }
+
+        function isEvalMenu(id) {
+            return id === 'quanlydanhgia' || id.startsWith('dg_');
         }
 
         // --- LOGIC ĐĂNG NHẬP / ĐĂNG XUẤT ---
@@ -485,23 +514,72 @@
 
         function onAdminUserChange() {
             if (currentPageId === 'thongtincanhan') loadProfile();
-            else if (currentPageId === 'quanlydanhgia') loadEvaluation();
+            else if (isEvalMenu(currentPageId)) loadEvaluation();
             else if (currentPageId !== 'quanlytaikhoan') loadPageContent(currentPageId);
         }
 
-        // --- RENDER MENU ---
+        // --- RENDER MENU ĐA CẤP ---
+        function toggleMenu(menuId) {
+            if (expandedMenus.includes(menuId)) {
+                expandedMenus = expandedMenus.filter(id => id !== menuId);
+            } else {
+                expandedMenus.push(menuId);
+                // Mở tự động mục con đầu tiên khi mở menu cha (nếu chưa đang ở trong nhóm)
+                const menu = menus.find(m => m.id === menuId);
+                if (menu && menu.children && !menu.children.some(c => c.id === currentPageId)) {
+                    openMenu(menu.children[0].id);
+                }
+            }
+            renderSidebar();
+        }
+
         function renderSidebar() {
             const users = JSON.parse(localStorage.getItem('users_db'));
             const isAdmin = users[currentUser] && users[currentUser].role === 'admin';
             
             const sidebar = document.getElementById('sidebar-menu');
             sidebar.innerHTML = '';
+            
             menus.forEach(m => {
                 if (m.adminOnly && !isAdmin) return;
+                
+                const hasChildren = m.children && m.children.length > 0;
+                const isExpanded = expandedMenus.includes(m.id);
+                const isActiveParent = currentPageId === m.id || (hasChildren && m.children.some(c => c.id === currentPageId));
+                
                 const div = document.createElement('div');
-                div.className = `sidebar-item flex items-center px-6 py-3 text-sm ${m.id === currentPageId ? 'active font-bold' : ''}`;
-                div.onclick = () => openMenu(m.id);
-                div.innerHTML = `<i class="fas ${m.icon} w-6"></i> <span>${m.title}</span>`;
+                div.className = `sidebar-item flex flex-col text-sm transition-colors ${isActiveParent && !hasChildren ? 'active font-bold' : ''}`;
+                
+                // Div hiển thị tiêu đề cha
+                const parentDiv = document.createElement('div');
+                parentDiv.className = `flex items-center justify-between px-6 py-3 cursor-pointer hover:bg-black/20 ${isActiveParent ? 'bg-black/20 font-bold border-l-4 border-white' : 'border-l-4 border-transparent'}`;
+                parentDiv.onclick = () => {
+                    if (hasChildren) toggleMenu(m.id);
+                    else openMenu(m.id);
+                };
+                parentDiv.innerHTML = `<div class="flex items-center"><i class="fas ${m.icon} w-6 text-center mr-2"></i> <span>${m.title}</span></div>
+                                       ${hasChildren ? `<i class="fas fa-chevron-${isExpanded ? 'down' : 'right'} text-[10px] opacity-70 transition-transform"></i>` : ''}`;
+                div.appendChild(parentDiv);
+
+                // Render nhóm con nếu có và đang mở
+                if (hasChildren && isExpanded) {
+                    const childContainer = document.createElement('div');
+                    childContainer.className = 'bg-black/10 flex flex-col py-1';
+                    
+                    m.children.forEach(child => {
+                        const isChildActive = currentPageId === child.id;
+                        const childDiv = document.createElement('div');
+                        childDiv.className = `pl-[3.5rem] pr-6 py-2 cursor-pointer transition-colors ${isChildActive ? 'text-white font-bold bg-black/20 border-l-2 border-white' : 'text-gray-300 hover:text-white hover:bg-black/10 border-l-2 border-transparent'}`;
+                        childDiv.innerHTML = `<i class="fas fa-minus mr-2 text-[8px] opacity-50"></i> ${child.title}`;
+                        childDiv.onclick = (e) => {
+                            e.stopPropagation();
+                            openMenu(child.id);
+                        };
+                        childContainer.appendChild(childDiv);
+                    });
+                    div.appendChild(childContainer);
+                }
+                
                 sidebar.appendChild(div);
             });
         }
@@ -510,9 +588,27 @@
             currentPageId = menuId;
             renderSidebar();
             
-            const menu = menus.find(m => m.id === menuId);
-            document.getElementById('page-title').textContent = menu.title;
-            document.getElementById('page-icon').className = `fas ${menu.icon} text-red-700 text-xl mr-3`;
+            let menuTitle = '';
+            let menuIcon = '';
+            let isEval = isEvalMenu(menuId);
+
+            // Tìm Title và Icon tương ứng
+            menus.forEach(m => {
+                if (m.id === menuId) {
+                    menuTitle = m.title; menuIcon = m.icon;
+                }
+                if (m.children) {
+                    m.children.forEach(c => {
+                        if (c.id === menuId) {
+                            menuTitle = `${m.title} <i class="fas fa-angle-right mx-2 text-xs opacity-60"></i> <span class="text-blue-600">${c.title}</span>`;
+                            menuIcon = m.icon;
+                        }
+                    });
+                }
+            });
+            
+            document.getElementById('page-title').innerHTML = menuTitle;
+            document.getElementById('page-icon').className = `fas ${menuIcon} text-red-700 text-xl mr-3`;
             
             const users = JSON.parse(localStorage.getItem('users_db'));
             const isAdmin = users[currentUser].role === 'admin';
@@ -530,7 +626,7 @@
                 document.getElementById('account-management-area').classList.remove('hidden'); renderUserList(); 
             } else if (menuId === 'thongtincanhan') {
                 document.getElementById('personal-info-area').classList.remove('hidden'); loadProfile(); 
-            } else if (menuId === 'quanlydanhgia') {
+            } else if (isEval) {
                 document.getElementById('evaluation-area').classList.remove('hidden'); loadEvaluation();
             } else {
                 document.getElementById('content-editor-area').classList.remove('hidden'); loadPageContent(menuId);
@@ -578,7 +674,7 @@
             html += '</tbody>'; table.innerHTML = html;
         }
 
-        // --- QUẢN LÝ ĐÁNH GIÁ CÁN BỘ (BẢNG TÍNH KPI MỚI) ---
+        // --- QUẢN LÝ ĐÁNH GIÁ CÁN BỘ (BẢNG TÍNH KPI) ---
         
         function handleEvidenceUpload(id) {
             const fileInput = document.getElementById(`ev_file_${id}`);
@@ -601,7 +697,6 @@
             }
         }
 
-        // Tự động tính Điểm thực hiện và Điểm quy đổi (KPI)
         function calcKPI(id, base, diff) {
             const progSelect = document.getElementById(`prog_${id}`);
             const qualSelect = document.getElementById(`qual_${id}`);
@@ -611,9 +706,7 @@
             let prog = parseFloat(progSelect.value) || 0;
             let qual = parseFloat(qualSelect.value) || 0;
 
-            // Công thức: Điểm TH = Điểm chuẩn * (30% Tiến độ + 70% Chất lượng)
             let th = base * (0.3 * prog + 0.7 * qual);
-            // Công thức: Điểm KPI = Điểm TH * Hệ số độ khó
             let qd = th * diff;
 
             thEl.textContent = th.toFixed(2);
@@ -702,7 +795,6 @@
 
                 criteria.forEach(group => {
                     group.items.forEach(item => {
-                        // Load inputs
                         if (evalData.answers[item.id]) {
                             const ans = evalData.answers[item.id];
                             if(document.getElementById(`prog_${item.id}`)) document.getElementById(`prog_${item.id}`).value = ans.prog;
@@ -710,7 +802,6 @@
                             calcKPI(item.id, item.base, item.diff); 
                         }
                         
-                        // Load files
                         if (evalData.evidences && evalData.evidences[item.id]) {
                             const evData = evalData.evidences[item.id];
                             if(evData && evData.name && evData.data && document.getElementById(`ev_name_${item.id}`)) {
@@ -728,7 +819,6 @@
                     });
                 });
                 
-                // Render Result Chart
                 let currentScores = [];
                 let currentLabels = [];
                 let currentTotal = 0;
@@ -886,9 +976,7 @@
                     if(isNaN(base) || base < 0) base = 0;
                     if(isNaN(diff) || diff < 1) diff = 1;
                     
-                    item.base = base;
-                    item.diff = diff;
-                    globalBase += base;
+                    item.base = base; item.diff = diff; globalBase += base;
                 });
             });
             
@@ -974,16 +1062,12 @@
 
         // --- 7. LƯU DỮ LIỆU CƠ BẢN (CHUNG CHO MENU KHÁC) ---
         function downloadTemplate() {
-            const menu = menus.find(m => m.id === currentPageId);
             const bom = "\uFEFF";
-            let csvContent = "";
-            if(currentPageId === 'lichhop') csvContent = "Ngày,Giờ,Nội dung cuộc họp,Thành phần tham dự,Địa điểm,Ghi chú\n2026-09-30,08:00,Họp giao ban tuần,Ban Giám Hiệu,Phòng họp 1,Chuẩn bị tài liệu";
-            else csvContent = "STT,Tên dữ liệu,Mô tả,Người phụ trách,Trạng thái\n1,Dữ liệu mẫu 1,Mô tả chi tiết,Nguyễn Văn A,Hoàn thành";
-
+            let csvContent = "STT,Tên dữ liệu,Mô tả,Người phụ trách,Trạng thái\n1,Dữ liệu mẫu 1,Mô tả chi tiết,Nguyễn Văn A,Hoàn thành";
             const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
-            link.download = `BieuMau_${menu.id}.csv`;
+            link.download = `BieuMau_${currentPageId}.csv`;
             document.body.appendChild(link); link.click(); document.body.removeChild(link);
         }
 
