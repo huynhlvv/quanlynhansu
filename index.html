@@ -6,6 +6,7 @@
     <title>Hệ thống Quản lý - Trường Tiểu học Lê Văn Việt</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Thêm thư viện Chart.js để vẽ biểu đồ -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
@@ -87,7 +88,6 @@
             </div>
             
             <div class="flex items-center gap-3">
-                <!-- Khu vực hiển thị tên người dùng (Đã cập nhật) -->
                 <div class="flex items-center bg-black/20 px-3 py-1.5 rounded-lg border border-white/10">
                     <i class="fas fa-user-circle text-2xl text-blue-300 mr-2"></i>
                     <div class="text-left">
@@ -95,8 +95,6 @@
                         <p class="text-[10px] text-green-300 leading-none"><i class="fas fa-circle text-[8px] mr-1"></i>Đang hoạt động</p>
                     </div>
                 </div>
-                
-                <!-- Nút Đăng xuất -->
                 <button onclick="logout()" class="bg-red-600 hover:bg-red-700 px-3 py-2 rounded text-sm transition shadow flex items-center font-bold">
                     <i class="fas fa-sign-out-alt sm:mr-1"></i> <span class="hidden sm:inline">Đăng xuất</span>
                 </button>
@@ -182,7 +180,7 @@
                         <!-- ================= QUẢN LÝ TÀI KHOẢN (ADMIN ONLY) ================= -->
                         <div id="account-management-area" class="hidden">
                             <h3 class="text-lg font-bold text-gray-800 mb-4 border-l-4 border-purple-600 pl-3">TẠO TÀI KHOẢN MỚI</h3>
-                            <div class="max-w-xl bg-white p-6 rounded-lg border border-gray-200 shadow-sm mb-8">
+                            <div class="max-w-2xl bg-white p-6 rounded-lg border border-gray-200 shadow-sm mb-8">
                                 <div id="acc-msg" class="hidden p-2 rounded mb-3 text-sm"></div>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div class="mb-2">
@@ -193,13 +191,20 @@
                                         <label class="block text-gray-700 text-sm mb-1 font-semibold">Mật khẩu *</label>
                                         <input type="text" id="new-user-pwd" class="w-full border rounded px-3 py-2 outline-none focus:ring-2 focus:ring-purple-400" value="123456">
                                     </div>
-                                    <div class="mb-4 md:col-span-2">
+                                    <div class="mb-4">
                                         <label class="block text-gray-700 text-sm mb-1 font-semibold">Họ và tên người dùng</label>
                                         <input type="text" id="new-user-fullname" class="w-full border rounded px-3 py-2 outline-none focus:ring-2 focus:ring-purple-400" placeholder="Nguyễn Văn A">
                                     </div>
+                                    <div class="mb-4">
+                                        <label class="block text-gray-700 text-sm mb-1 font-semibold">Loại tài khoản (Phân quyền) *</label>
+                                        <select id="new-user-role" class="w-full border rounded px-3 py-2 outline-none focus:ring-2 focus:ring-purple-400 bg-white">
+                                            <option value="user">Giáo viên thông thường</option>
+                                            <option value="totruong">Tổ trưởng (Có thêm quyền Nghiệm thu)</option>
+                                        </select>
+                                    </div>
                                 </div>
-                                <button onclick="createNewAccount()" class="bg-purple-600 text-white font-bold px-6 py-2 rounded hover:bg-purple-700 shadow flex items-center">
-                                    <i class="fas fa-user-plus mr-2"></i> Tạo tài khoản cấp cho người dùng
+                                <button onclick="createNewAccount()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded shadow flex items-center transition">
+                                    <i class="fas fa-user-plus mr-2"></i> Tạo tài khoản mới
                                 </button>
                             </div>
                             
@@ -243,7 +248,7 @@
                                 <table class="data-table" id="table-chua-minh-chung"><thead class="bg-[#eaf4f4] text-[#00695c]"><tr><th>Tên nhiệm vụ</th><th>Người phụ trách</th><th>Ngày giao</th><th>Hạn chót</th></tr></thead><tbody></tbody></table>
                             </div>
 
-                            <!-- TẠO NHIỆM VỤ / GIAO VIỆC -->
+                            <!-- TẠO NHIỆM VỤ / GIAO VIỆC (Mở cho tất cả User) -->
                             <div id="view-qlnv_tao" class="hidden">
                                 <div class="max-w-xl bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
                                     <div class="mb-4">
@@ -291,7 +296,7 @@
                                 </table>
                             </div>
 
-                            <!-- NGHIỆM THU (ADMIN ONLY) -->
+                            <!-- NGHIỆM THU (ADMIN / TỔ TRƯỞNG ONLY) -->
                             <div id="view-qlnv_nghiemthu" class="hidden overflow-x-auto bg-white rounded border border-gray-200 shadow-sm">
                                 <table class="data-table" id="table-nghiem-thu">
                                     <thead class="bg-[#eaf4f4] text-[#00695c]"><tr><th>Tên nhiệm vụ</th><th>Người thực hiện</th><th>Minh chứng đính kèm</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
@@ -452,8 +457,8 @@
         // 1. CẤU TRÚC MENU ĐA CẤP CÓ PHÂN QUYỀN
         // ==============================================================================
         const menus = [
-            { id: 'baocaothongke', title: 'Báo cáo tổng hợp', icon: 'fa-chart-bar', adminOnly: true },
-            { id: 'quanlytaikhoan', title: 'Quản lý tài khoản', icon: 'fa-users-cog', adminOnly: true }, 
+            { id: 'baocaothongke', title: 'Báo cáo tổng hợp', icon: 'fa-chart-bar', allowedRoles: ['admin'] },
+            { id: 'quanlytaikhoan', title: 'Quản lý tài khoản', icon: 'fa-users-cog', allowedRoles: ['admin'] }, 
             { id: 'thongtincanhan', title: 'Thông tin cá nhân', icon: 'fa-user-circle' },
             { 
                 id: 'banggiamsat', title: 'Bảng giám sát', icon: 'fa-chart-pie',
@@ -468,11 +473,11 @@
             { 
                 id: 'quanlynhiemvu', title: 'Quản lý nhiệm vụ', icon: 'fa-clipboard-list',
                 children: [
-                    { id: 'qlnv_tao', title: 'Tạo nhiệm vụ' }, // MỞ CHO TẤT CẢ USER
-                    { id: 'qlnv_giao', title: 'Giao việc', adminOnly: true },
+                    { id: 'qlnv_tao', title: 'Tạo nhiệm vụ' },
+                    { id: 'qlnv_giao', title: 'Giao việc', allowedRoles: ['admin'] },
                     { id: 'qlnv_tiendo', title: 'Cập nhật tiến độ' },
                     { id: 'qlnv_minhchung', title: 'Nộp minh chứng' },
-                    { id: 'qlnv_nghiemthu', title: 'Nghiệm thu', adminOnly: true }
+                    { id: 'qlnv_nghiemthu', title: 'Nghiệm thu', allowedRoles: ['admin', 'totruong'] }
                 ]
             },
             { 
@@ -554,7 +559,7 @@
             let users = JSON.parse(localStorage.getItem('users_db')) || {};
             const defaultUsers = [
                 { id: 'admin', role: 'admin', fullName: 'Quản trị viên Hệ thống' },
-                { id: 'hieutruong', role: 'user', fullName: 'Nguyễn Văn Huỳnh' },
+                { id: 'hieutruong', role: 'totruong', fullName: 'Nguyễn Văn Huỳnh (Tổ trưởng)' },
                 { id: 'giaovien1', role: 'user', fullName: 'Giáo viên 1' },
                 { id: 'giaovien2', role: 'user', fullName: 'Giáo viên 2' }
             ];
@@ -568,7 +573,7 @@
             if (!localStorage.getItem('pages_db')) localStorage.setItem('pages_db', JSON.stringify({}));
             if (!localStorage.getItem('kpi_criteria_db_v4')) localStorage.setItem('kpi_criteria_db_v4', JSON.stringify(defaultCriteria));
             if (!localStorage.getItem('tasks_db_v2')) {
-                let initTasks = { 'admin': defaultTasks, 'giaovien1': defaultTasks };
+                let initTasks = { 'admin': defaultTasks, 'giaovien1': defaultTasks, 'hieutruong': defaultTasks };
                 localStorage.setItem('tasks_db_v2', JSON.stringify(initTasks));
             }
         };
@@ -595,7 +600,7 @@
 
         function getViewingUser() {
             const users = JSON.parse(localStorage.getItem('users_db'));
-            if (users[currentUser] && users[currentUser].role === 'admin') {
+            if (users[currentUser] && (users[currentUser].role === 'admin' || users[currentUser].role === 'totruong')) {
                 const selector = document.getElementById('admin-user-select');
                 return selector ? (selector.value || currentUser) : currentUser;
             }
@@ -618,14 +623,24 @@
                 currentUser = u;
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('dashboard-screen').classList.remove('hidden');
+                
+                let roleDisplay = '';
+                if (users[u].role === 'admin') roleDisplay = 'Quản trị viên';
+                else if (users[u].role === 'totruong') roleDisplay = 'Tổ trưởng';
+                else roleDisplay = 'Giáo viên';
+
                 if (users[u].role === 'admin') {
-                    document.getElementById('header-role').innerHTML = '<span class="bg-red-500 text-white px-2 py-0.5 rounded">Quản trị viên</span>';
+                    document.getElementById('header-role').innerHTML = `<span class="bg-red-500 text-white px-2 py-0.5 rounded">${roleDisplay}</span>`;
                     populateAdminDropdown(); currentPageId = 'baocaothongke';
+                } else if (users[u].role === 'totruong') {
+                    document.getElementById('header-role').innerHTML = `<span class="bg-yellow-500 text-white px-2 py-0.5 rounded">${roleDisplay}</span>`;
+                    populateAdminDropdown(); currentPageId = 'thongtincanhan';
                 } else {
                     document.getElementById('admin-controls').classList.add('hidden');
-                    document.getElementById('header-role').textContent = 'Hệ thống Quản lý Nội bộ';
+                    document.getElementById('header-role').innerHTML = `<span class="bg-blue-500 text-white px-2 py-0.5 rounded">${roleDisplay}</span>`;
                     currentPageId = 'thongtincanhan';
                 }
+
                 updateHeaderName(); renderSidebar(); openMenu(currentPageId);
             } else {
                 document.getElementById('login-error').classList.remove('hidden');
@@ -653,7 +668,8 @@
             for (let u in users) {
                 const opt = document.createElement('option');
                 opt.value = u;
-                opt.textContent = u === currentUser ? `(Tôi) ${users[u].fullName || u}` : `${users[u].fullName || u} (${u})`;
+                let roleLabel = users[u].role === 'admin' ? '[Admin]' : (users[u].role === 'totruong' ? '[Tổ trưởng]' : '[GV]');
+                opt.textContent = u === currentUser ? `(Tôi) ${users[u].fullName || u}` : `${roleLabel} ${users[u].fullName || u} (${u})`;
                 select.appendChild(opt);
             }
             if (currentSelected && users[currentSelected]) select.value = currentSelected;
@@ -671,10 +687,10 @@
             else {
                 expandedMenus.push(menuId);
                 const menu = menus.find(m => m.id === menuId);
+                const users = JSON.parse(localStorage.getItem('users_db'));
+                const userRole = users[currentUser].role;
                 if (menu && menu.children && !menu.children.some(c => c.id === currentPageId)) {
-                    const users = JSON.parse(localStorage.getItem('users_db'));
-                    const isAdmin = users[currentUser].role === 'admin';
-                    let targetChild = menu.children.find(c => !(c.adminOnly && !isAdmin));
+                    let targetChild = menu.children.find(c => !c.allowedRoles || c.allowedRoles.includes(userRole));
                     if (targetChild) openMenu(targetChild.id);
                 }
             }
@@ -683,12 +699,13 @@
 
         function renderSidebar() {
             const users = JSON.parse(localStorage.getItem('users_db'));
-            const isAdmin = users[currentUser].role === 'admin';
+            const userRole = users[currentUser].role;
             const sidebar = document.getElementById('sidebar-menu');
             sidebar.innerHTML = '';
             
             menus.forEach(m => {
-                if (m.adminOnly && !isAdmin) return;
+                if (m.allowedRoles && !m.allowedRoles.includes(userRole)) return;
+                
                 const hasChildren = m.children && m.children.length > 0;
                 const isExpanded = expandedMenus.includes(m.id);
                 const isActiveParent = currentPageId === m.id || (hasChildren && m.children.some(c => c.id === currentPageId));
@@ -707,7 +724,7 @@
                     const childContainer = document.createElement('div');
                     childContainer.className = 'bg-black/10 flex flex-col py-1';
                     m.children.forEach(child => {
-                        if (child.adminOnly && !isAdmin) return; 
+                        if (child.allowedRoles && !child.allowedRoles.includes(userRole)) return; 
                         const isChildActive = currentPageId === child.id;
                         const childDiv = document.createElement('div');
                         childDiv.className = `pl-[3.5rem] pr-6 py-2 cursor-pointer transition-colors ${isChildActive ? 'text-white font-bold bg-black/20 border-l-2 border-white' : 'text-gray-300 hover:text-white hover:bg-black/10 border-l-2 border-transparent'}`;
@@ -737,10 +754,15 @@
             document.getElementById('page-icon').className = `fas ${menuIcon} text-red-700 text-xl mr-3`;
             
             const users = JSON.parse(localStorage.getItem('users_db'));
-            const isAdmin = users[currentUser].role === 'admin';
+            const userRole = users[currentUser].role;
             const adminControls = document.getElementById('admin-controls');
-            if (isAdmin && menuId !== 'quanlytaikhoan' && menuId !== 'baocaothongke') adminControls.classList.remove('hidden');
-            else adminControls.classList.add('hidden');
+            
+            // Hiện dropdown user select cho Admin và Tổ trưởng ở các chức năng đánh giá/nhiệm vụ
+            if ((userRole === 'admin' || userRole === 'totruong') && menuId !== 'quanlytaikhoan' && menuId !== 'baocaothongke') {
+                adminControls.classList.remove('hidden');
+            } else {
+                adminControls.classList.add('hidden');
+            }
             
             document.getElementById('personal-info-area').classList.add('hidden');
             document.getElementById('content-editor-area').classList.add('hidden');
@@ -859,6 +881,76 @@
         }
 
         // ==============================================================================
+        // QUẢN LÝ TÀI KHOẢN (ADMIN ONLY) + TÍNH NĂNG XÓA TÀI KHOẢN
+        // ==============================================================================
+        function createNewAccount() {
+            const usernameInput = document.getElementById('new-username');
+            const fullnameInput = document.getElementById('new-user-fullname');
+            const pwdInput = document.getElementById('new-user-pwd');
+            const roleInput = document.getElementById('new-user-role');
+            const msg = document.getElementById('acc-msg');
+            
+            const username = usernameInput.value.trim().toLowerCase();
+            const fullname = fullnameInput.value.trim();
+            const pwd = pwdInput.value;
+            const role = roleInput.value;
+            
+            msg.classList.remove('hidden', 'bg-green-100', 'text-green-700', 'bg-red-100', 'text-red-700');
+            if (!username || !pwd) { msg.textContent = 'Vui lòng nhập tên đăng nhập và mật khẩu!'; msg.classList.add('bg-red-100', 'text-red-700'); return; }
+            if (!/^[a-zA-Z0-9_]+$/.test(username)) { msg.textContent = 'Tên đăng nhập không chứa khoảng trắng/ký tự đặc biệt!'; msg.classList.add('bg-red-100', 'text-red-700'); return; }
+            
+            let users = JSON.parse(localStorage.getItem('users_db'));
+            if (users[username]) { msg.textContent = 'Tên đăng nhập này đã tồn tại!'; msg.classList.add('bg-red-100', 'text-red-700'); return; }
+            
+            users[username] = { password: pwd, role: role, fullName: fullname, dob: '', position: '', phone: '', email: '' };
+            localStorage.setItem('users_db', JSON.stringify(users));
+            msg.textContent = `Tạo thành công tài khoản: ${username}`; msg.classList.add('bg-green-100', 'text-green-700');
+            
+            usernameInput.value = ''; fullnameInput.value = ''; pwdInput.value = '123456';
+            populateAdminDropdown(); renderUserList();
+        }
+
+        function deleteAccount(delUser) {
+            if(delUser === currentUser) {
+                alert("Không thể xóa tài khoản Admin đang đăng nhập!");
+                return;
+            }
+            if(confirm(`Bạn có chắc chắn muốn XÓA VĨNH VIỄN tài khoản "${delUser}" không?\nToàn bộ dữ liệu, nhiệm vụ và KPI của tài khoản này sẽ bị mất.`)) {
+                let users = JSON.parse(localStorage.getItem('users_db'));
+                delete users[delUser];
+                localStorage.setItem('users_db', JSON.stringify(users));
+                
+                // Cleanup data
+                let tasksDb = JSON.parse(localStorage.getItem('tasks_db_v2'));
+                if(tasksDb && tasksDb[delUser]) { delete tasksDb[delUser]; localStorage.setItem('tasks_db_v2', JSON.stringify(tasksDb)); }
+                
+                let pagesDb = JSON.parse(localStorage.getItem('pages_db'));
+                if(pagesDb && pagesDb[delUser]) { delete pagesDb[delUser]; localStorage.setItem('pages_db', JSON.stringify(pagesDb)); }
+
+                alert(`Đã xóa tài khoản ${delUser} thành công!`);
+                renderUserList(); populateAdminDropdown();
+            }
+        }
+
+        function renderUserList() {
+            const users = JSON.parse(localStorage.getItem('users_db'));
+            const table = document.getElementById('user-list-table');
+            let html = `<thead><tr><th>STT</th><th>Tên đăng nhập</th><th>Họ và tên</th><th>Vai trò</th><th class="text-center">Thao tác</th></tr></thead><tbody>`;
+            let stt = 1;
+            for (let u in users) {
+                let roleHtml = '';
+                if(users[u].role === 'admin') roleHtml = '<span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-bold border border-red-200">Admin</span>';
+                else if(users[u].role === 'totruong') roleHtml = '<span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-bold border border-yellow-200">Tổ trưởng</span>';
+                else roleHtml = '<span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-bold border border-blue-200">Giáo viên</span>';
+                
+                let btnDel = u !== currentUser ? `<button onclick="deleteAccount('${u}')" class="text-red-500 hover:text-red-700 text-xs font-bold"><i class="fas fa-trash-alt"></i> Xóa</button>` : '';
+
+                html += `<tr><td class="text-center w-12">${stt++}</td><td class="font-bold text-gray-800">${u}</td><td>${users[u].fullName || '<i class="text-gray-400">Chưa cập nhật</i>'}</td><td>${roleHtml}</td><td class="text-center w-20">${btnDel}</td></tr>`;
+            }
+            html += '</tbody>'; table.innerHTML = html;
+        }
+
+        // ==============================================================================
         // 4. MODULE: BẢNG GIÁM SÁT & QUẢN LÝ NHIỆM VỤ
         // ==============================================================================
         
@@ -885,7 +977,7 @@
             let today = new Date();
             let dDate = new Date(deadline);
             let diffDays = (dDate - today) / (1000 * 3600 * 24);
-            return diffDays >= 0 && diffDays <= 3; // Sắp đến hạn trong 3 ngày
+            return diffDays >= 0 && diffDays <= 3; 
         }
 
         function getTaskStatusHtml(task) {
@@ -911,7 +1003,7 @@
                 if (isOverdue) overdue++;
                 if (isMissing) missing++;
 
-                // 1. TỔNG NHIỆM VỤ (Có Nút Xóa)
+                // 1. TỔNG NHIỆM VỤ
                 let evidenceDisplay = t.evidence ? `<span class="text-green-600 font-semibold"><i class="fas fa-check-circle"></i> ${t.fileName}</span>` : '<span class="text-red-500"><i class="fas fa-times-circle"></i> Chưa nộp</span>';
                 htmlTong += `<tr>
                     <td>${t.name}</td><td>${t.assignee}</td><td>${t.assignDate || ''}</td><td>${t.deadline}</td>
@@ -932,7 +1024,7 @@
                     <td class="text-center"><button class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded text-xs shadow transition" onclick="deleteTask(${t.id})"><i class="fas fa-trash"></i> Xóa</button></td>
                 </tr>`;
 
-                // CẬP NHẬT TIẾN ĐỘ (Có Nút Xóa)
+                // CẬP NHẬT TIẾN ĐỘ
                 if(!t.approved) {
                     htmlCapNhat += `<tr>
                         <td>${t.name}</td><td class="font-bold text-gray-700">${t.assignee}</td><td>${getTaskStatusHtml(t)}</td>
@@ -966,7 +1058,7 @@
                     <td>${uploadControl}</td>
                 </tr>`;
 
-                // NGHIỆM THU (Admin Only)
+                // NGHIỆM THU (Admin/Tổ Trưởng Only)
                 if (t.evidence && !t.approved) {
                     htmlNghiemThu += `<tr>
                         <td>${t.name}</td><td class="font-bold text-indigo-700">${t.assignee}</td>
