@@ -159,26 +159,61 @@
                             </div>
                         </div>
 
-                        <!-- 2. Khu vực Đánh giá KPI -->
+                        <!-- 2. Khu vực Đánh giá Cán bộ -->
                         <div id="evaluation-area" class="hidden">
-                            <!-- Chế độ xem & đánh giá -->
-                            <div id="eval-main-view">
-                                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
-                                    <div class="text-gray-700 bg-blue-50 p-4 rounded-lg border border-blue-100 flex items-start flex-1 w-full">
-                                        <i class="fas fa-info-circle text-blue-500 mt-1 mr-3 text-lg"></i>
-                                        <div class="text-sm leading-relaxed">
-                                            <b>Hướng dẫn đánh giá:</b> Chọn mức độ hoàn thành dựa trên Tiến độ và Chất lượng công việc. Hệ thống tự động tính toán:
-                                            <ul class="list-disc ml-5 mt-1 text-gray-600">
-                                                <li><b>Điểm thực hiện</b> = Điểm chuẩn × [ (30% × Tiến độ) + (70% × Kết quả) ]</li>
-                                                <li><b>Điểm KPI</b> = Điểm thực hiện × Hệ số độ khó</li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                    <!-- Nút dành riêng cho Admin -->
+                            
+                            <!-- Tab: Danh mục sản phẩm (Xem & Chỉnh sửa) -->
+                            <div id="eval-tab-danhmuc" class="hidden">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="text-lg font-bold text-gray-800 border-l-4 border-indigo-600 pl-3">DANH MỤC SẢN PHẨM CÔNG VIỆC CHUẨN</h3>
                                     <div id="admin-criteria-tools" class="hidden">
-                                        <button onclick="openEditCriteria()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded shadow text-sm font-bold flex items-center whitespace-nowrap">
+                                        <button onclick="toggleEditCriteria()" id="btn-toggle-edit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded shadow text-sm font-bold flex items-center whitespace-nowrap transition">
                                             <i class="fas fa-edit mr-2"></i> Chỉnh sửa bộ tiêu chí
                                         </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Chế độ chỉ xem -->
+                                <div id="criteria-view-mode" class="overflow-x-auto bg-white rounded border border-gray-200 shadow-sm mb-6">
+                                    <table class="w-full text-sm border-collapse" id="criteria-view-table">
+                                        <thead class="bg-[#eaf4f4] text-[#00695c]">
+                                            <tr>
+                                                <th class="border border-gray-300 p-3 text-left w-3/5 font-bold">Tên công việc / Tiêu chí</th>
+                                                <th class="border border-gray-300 p-2 text-center font-bold w-1/5">Điểm Chuẩn</th>
+                                                <th class="border border-gray-300 p-2 text-center font-bold w-1/5">Hệ số độ khó</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="criteria-view-tbody">
+                                            <!-- Render bằng JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Chế độ chỉnh sửa (Ẩn mặc định) -->
+                                <div id="criteria-edit-mode" class="hidden">
+                                    <div class="bg-indigo-50 text-indigo-800 p-3 rounded mb-4 text-sm border border-indigo-200">
+                                        <i class="fas fa-info-circle mr-1"></i> Admin có thể thay đổi Điểm chuẩn và Hệ số độ khó. <b>Lưu ý:</b> Tổng các Điểm chuẩn nên là 100 điểm để chuẩn hóa kết quả xếp loại.
+                                    </div>
+                                    <div id="criteria-editor-container" class="overflow-x-auto bg-white rounded border border-gray-200 shadow-sm mb-6">
+                                        <!-- Render bằng JS -->
+                                    </div>
+                                    <div class="flex justify-end gap-3 mb-6">
+                                        <button onclick="toggleEditCriteria()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded shadow">Hủy bỏ</button>
+                                        <button onclick="saveEditedCriteria()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded shadow font-bold"><i class="fas fa-save mr-1"></i> Lưu Bộ Tiêu Chí</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tab: Bảng tính KPI -->
+                            <div id="eval-tab-bangtinh" class="hidden">
+                                <div class="mb-4 text-gray-700 bg-blue-50 p-4 rounded-lg border border-blue-100 flex items-start">
+                                    <i class="fas fa-info-circle text-blue-500 mt-1 mr-3 text-lg"></i>
+                                    <div class="text-sm leading-relaxed">
+                                        <b>Hướng dẫn tự đánh giá:</b> Chọn mức độ hoàn thành dựa trên Tiến độ và Chất lượng công việc. Hệ thống tự động tính toán theo công thức:
+                                        <ul class="list-disc ml-5 mt-1 text-gray-600">
+                                            <li><b>Điểm thực hiện</b> = Điểm chuẩn × [ (30% × Tiến độ) + (70% × Kết quả) ]</li>
+                                            <li><b>Điểm quy đổi</b> = Điểm thực hiện × Hệ số độ khó</li>
+                                        </ul>
                                     </div>
                                 </div>
                                 
@@ -186,13 +221,13 @@
                                     <table class="w-full text-sm border-collapse" id="eval-table" style="min-width: 1000px;">
                                         <thead>
                                             <tr class="bg-[#eaf4f4] text-[#00695c]">
-                                                <th class="border border-gray-300 p-3 text-left w-[30%] font-bold">Tên công việc / Tiêu chí</th>
+                                                <th class="border border-gray-300 p-3 text-left w-[30%] font-bold">DANH MỤC SẢN PHẨM CÔNG VIỆC CHUẨN</th>
                                                 <th class="border border-gray-300 p-2 text-center font-bold w-16" title="Điểm chuẩn ban đầu">Điểm Chuẩn</th>
                                                 <th class="border border-gray-300 p-2 text-center font-bold w-16" title="Hệ số độ khó">Hệ số (HSĐK)</th>
                                                 <th class="border border-gray-300 p-2 text-center font-bold w-[12%] text-orange-600">Tiến độ (30%)</th>
                                                 <th class="border border-gray-300 p-2 text-center font-bold w-[12%] text-blue-600">Kết quả (70%)</th>
                                                 <th class="border border-gray-300 p-2 text-center font-bold w-16 bg-yellow-50" title="Điểm thực hiện">Điểm TH</th>
-                                                <th class="border border-gray-300 p-2 text-center font-bold w-16 bg-blue-50 text-blue-700" title="Điểm quy đổi thực tế (KPI)">Điểm KPI</th>
+                                                <th class="border border-gray-300 p-2 text-center font-bold w-16 bg-blue-50 text-blue-700" title="Điểm quy đổi thực tế">Điểm QĐ</th>
                                                 <th class="border border-gray-300 p-3 text-center font-bold w-48">Minh chứng</th>
                                             </tr>
                                         </thead>
@@ -204,32 +239,24 @@
                                 
                                 <div class="flex justify-end">
                                     <button onclick="saveEvaluation()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded shadow flex items-center transition">
-                                        <i class="fas fa-save mr-2"></i> Xác nhận nộp & Xem kết quả
+                                        <i class="fas fa-save mr-2"></i> Lưu Bảng & Xem Xếp loại
                                     </button>
                                 </div>
+                            </div>
 
-                                <!-- RESULT AREA -->
-                                <div id="eval-result-area" class="hidden mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 border-t pt-6">
+                            <!-- Tab: Xếp loại -->
+                            <div id="eval-tab-xeploai" class="hidden">
+                                <div id="eval-result-area" class="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     <div class="md:col-span-1 bg-white p-6 rounded-lg border border-gray-200 shadow-sm flex flex-col justify-center items-center text-center h-full relative">
                                         <div id="eval-last-update" class="absolute top-2 right-2 text-xs text-gray-400 italic"></div>
                                         <h3 class="text-lg font-bold text-gray-700 mb-3 uppercase tracking-wide">Điểm KPI Cuối Cùng</h3>
                                         <div class="text-5xl font-extrabold text-blue-600 mb-2" id="eval-score">0</div>
+                                        <div class="text-sm text-gray-500 font-medium mb-6">/ 70 Điểm Tối đa</div>
                                         <div id="eval-rank" class="text-sm font-bold px-4 py-2.5 rounded-full border bg-gray-100 text-gray-800 w-full uppercase shadow-inner mt-4">Chưa xếp loại</div>
                                     </div>
-                                    <div class="md:col-span-2 bg-white p-4 rounded-lg border border-gray-200 shadow-sm" style="height: 320px;">
+                                    <div class="md:col-span-2 bg-white p-4 rounded-lg border border-gray-200 shadow-sm" style="height: 350px;">
                                         <canvas id="evalChart"></canvas>
                                     </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Chế độ chỉnh sửa Bộ Tiêu Chí (Chỉ Admin) -->
-                            <div id="criteria-edit-view" class="hidden">
-                                <h3 class="text-lg font-bold text-gray-800 mb-4 border-l-4 border-indigo-600 pl-3">CHỈNH SỬA BỘ TIÊU CHÍ</h3>
-                                <div class="bg-indigo-50 text-indigo-800 p-3 rounded mb-4 text-sm border border-indigo-200">
-                                    <i class="fas fa-info-circle mr-1"></i> Admin có thể thay đổi Điểm chuẩn và Hệ số độ khó. <b>Lưu ý:</b> Tổng các Điểm chuẩn nên là 100 điểm để chuẩn hóa kết quả xếp loại.
-                                </div>
-                                <div id="criteria-editor-container" class="overflow-x-auto bg-white rounded border border-gray-200 shadow-sm mb-6">
-                                    <!-- Render bằng JS -->
                                 </div>
                             </div>
                         </div>
@@ -330,7 +357,7 @@
     </div>
 
     <script>
-        // --- 1. CẤU TRÚC MENU MỚI THEO YÊU CẦU ---
+        // --- 1. CẤU TRÚC MENU ---
         const menus = [
             { id: 'quanlytaikhoan', title: 'Quản lý tài khoản', icon: 'fa-users-cog', adminOnly: true }, 
             { id: 'thongtincanhan', title: 'Thông tin cá nhân', icon: 'fa-user-circle' },
@@ -357,11 +384,9 @@
             { 
                 id: 'quanlydanhgia', title: 'Đánh giá cán bộ', icon: 'fa-star',
                 children: [
-                    { id: 'dg_diemchuan', title: 'Điểm chuẩn' },
-                    { id: 'dg_tiendo', title: 'Tiến độ 30%' },
-                    { id: 'dg_ketqua', title: 'Kết quả 70%' },
-                    { id: 'dg_hesokho', title: 'Hệ số khó' },
-                    { id: 'dg_diemkpi', title: 'Điểm KPI' }
+                    { id: 'dg_danhmuc', title: 'Danh mục sản phẩm' },
+                    { id: 'dg_bangtinh', title: 'Bảng tính KPI' },
+                    { id: 'dg_xeploai', title: 'Xếp loại' }
                 ]
             },
             { id: 'quanlyphonghop', title: 'Phòng họp', icon: 'fa-door-open' },
@@ -372,41 +397,29 @@
             { id: 'danhba', title: 'Danh bạ', icon: 'fa-address-book' }
         ];
 
-        // Mảng lưu trạng thái thư mục đang mở
-        let expandedMenus = ['quanlydanhgia'];
+        let expandedMenus = ['quanlydanhgia']; 
 
-        // --- BỘ TIÊU CHÍ ĐÁNH GIÁ MẶC ĐỊNH ---
+        // --- BỘ TIÊU CHÍ ĐÁNH GIÁ (KO LĐQL) ---
         const defaultCriteria = [
-            { group: "I. NHIỆM VỤ CHUYÊN MÔN GIẢNG DẠY", items: [
-                { id: 'c1', text: "1. Thực hiện đầy đủ chương trình môn Tin học", base: 8, diff: 1.0 },
-                { id: 'c2', text: "2. Xây dựng kế hoạch dạy học", base: 5, diff: 1.0 },
-                { id: 'c3', text: "3. Chuẩn bị bài dạy, học liệu số", base: 5, diff: 1.0 },
-                { id: 'c4', text: "4. Tổ chức giờ dạy hiệu quả", base: 8, diff: 1.1 },
-                { id: 'c5', text: "5. Đổi mới phương pháp, ứng dụng CNTT", base: 5, diff: 1.2 },
-                { id: 'c6', text: "6. Hướng dẫn kỹ năng thực hành máy tính", base: 6, diff: 1.1 },
-                { id: 'c7', text: "7. Đánh giá kết quả học tập HS", base: 6, diff: 1.0 },
-                { id: 'c8', text: "8. Theo dõi, hỗ trợ HS", base: 4, diff: 1.1 },
-                { id: 'c9', text: "9. Giáo dục kỹ năng số và an toàn mạng", base: 5, diff: 1.1 },
-                { id: 'c10', text: "10. Quản lý nền nếp tại phòng máy", base: 4, diff: 1.1 },
-                { id: 'c11', text: "11. Hồ sơ chuyên môn", base: 3, diff: 1.0 },
-                { id: 'c12', text: "12. Sinh hoạt và bồi dưỡng chuyên môn", base: 3, diff: 1.0 },
-                { id: 'c13', text: "13. Phối hợp GVCN và các bộ phận", base: 3, diff: 1.0 }
+            { group: "A. CÔNG VIỆC TRỌNG TÂM", items: [
+                { id: 'c1', text: "1. Tham gia tập huấn sử dụng SGK bộ sách 'Kết nối tri thức với cuộc sống'; Báo cáo kết quả", base: 10, diff: 1.0 },
+                { id: 'c2', text: "2. Tập huấn bồi dưỡng chính trị hè, viết bài thu hoạch cá nhân năm 2026", base: 10, diff: 1.0 },
+                { id: 'c3', text: "3. Tham gia tập huấn BDTX trên hệ thống CSDL theo chuyên đề GV đăng kí", base: 10, diff: 1.0 },
+                { id: 'c4', text: "4. Tham gia tập huấn chuyên môn hè (GD hòa nhập, AI, LMS360, Tiếng Anh...)", base: 10, diff: 1.0 },
+                { id: 'c5', text: "5. Xây dựng thời khóa biểu, lịch báo giảng", base: 10, diff: 1.0 },
+                { id: 'c6', text: "6. Phối hợp thực hiện công tác khám sức khỏe cho học sinh đầu năm", base: 10, diff: 1.0 },
+                { id: 'c7', text: "7. Xây dựng kế hoạch dạy học các môn học và hoạt động giáo dục", base: 10, diff: 1.0 },
+                { id: 'c8', text: "8. Xây dựng kế hoạch giáo dục của tổ chuyên môn năm học 2026-2027", base: 10, diff: 1.0 },
+                { id: 'c9', text: "9. Báo cáo rà soát nhu cầu sách giáo khoa của học sinh", base: 10, diff: 1.0 },
+                { id: 'c10', text: "10. Hỗ trợ tổ chức Lễ khai giảng NH 2026-2027, Tết Trung thu 2026", base: 10, diff: 1.0 },
+                { id: 'c11', text: "11. Cập nhật CSDL HS đầu năm, Enetviet, hướng dẫn CMHS đăng nhập", base: 10, diff: 1.0 },
+                { id: 'c12', text: "12. Ổn định nền nếp học sinh đầu năm, báo cáo tình hình", base: 10, diff: 1.0 }
             ]},
-            { group: "II. QUẢN LÝ, KHAI THÁC PHÒNG MÁY VÀ THIẾT BỊ CNTT", items: [
-                { id: 'c14', text: "14. Kiểm tra tình trạng máy tính, thiết bị", base: 4, diff: 1.1 },
-                { id: 'c15', text: "15. Theo dõi và báo cáo sự cố", base: 3, diff: 1.1 },
-                { id: 'c16', text: "16. Quản lý phần mềm phục vụ dạy học", base: 3, diff: 1.0 },
-                { id: 'c17', text: "17. An toàn và bảo mật dữ liệu", base: 3, diff: 1.2 },
-                { id: 'c18', text: "18. Quản lý tài khoản, thiết bị, dữ liệu được phân công", base: 2, diff: 1.1 },
-                { id: 'c19', text: "19. Kiểm kê, bàn giao tài sản CNTT", base: 2, diff: 1.0 },
-                { id: 'c20', text: "20. Đề xuất sửa chữa, nâng cấp, mua sắm", base: 3, diff: 1.1 }
-            ]},
-            { group: "III. HỖ TRỢ CHUYỂN ĐỔI SỐ CỦA NHÀ TRƯỜNG", items: [
-                { id: 'c21', text: "21. Hỗ trợ giáo viên sử dụng nền tảng/phần mềm", base: 4, diff: 1.1 },
-                { id: 'c22', text: "22. Hỗ trợ khai thác học liệu số", base: 3, diff: 1.1 },
-                { id: 'c23', text: "23. Tham gia hoạt động chuyển đổi số", base: 3, diff: 1.2 },
-                { id: 'c24', text: "24. Hỗ trợ xử lý vấn đề CNTT trong phạm vi được giao", base: 3, diff: 1.2 },
-                { id: 'c25', text: "25. Báo cáo, thống kê, đề xuất giải pháp", base: 2, diff: 1.0 }
+            { group: "B. CÔNG VIỆC PHỐI HỢP & NHIỆM VỤ KHÁC", items: [
+                { id: 'c13', text: "13. Chấp hành tốt chủ trương chính sách của Đảng, pháp luật, nội quy", base: 10, diff: 1.0 },
+                { id: 'c14', text: "14. Thực hiện tốt công tác an toàn trường học", base: 10, diff: 1.0 },
+                { id: 'c15', text: "15. Phối hợp hiệu quả các bộ phận đoàn thể trong và ngoài nhà trường", base: 10, diff: 1.1 },
+                { id: 'c16', text: "16. Tổ chức (tham gia) các phong trào nhà trường phát động", base: 10, diff: 1.1 }
             ]}
         ];
 
@@ -432,12 +445,12 @@
             if (updated) localStorage.setItem('users_db', JSON.stringify(users));
 
             if (!localStorage.getItem('pages_db')) localStorage.setItem('pages_db', JSON.stringify({}));
-            if (!localStorage.getItem('kpi_criteria_db_v2')) localStorage.setItem('kpi_criteria_db_v2', JSON.stringify(defaultCriteria));
+            if (!localStorage.getItem('kpi_criteria_db_v3')) localStorage.setItem('kpi_criteria_db_v3', JSON.stringify(defaultCriteria));
         };
         initDB();
 
         function getCriteriaData() {
-            return JSON.parse(localStorage.getItem('kpi_criteria_db_v2'));
+            return JSON.parse(localStorage.getItem('kpi_criteria_db_v3'));
         }
 
         let currentUser = null;
@@ -514,7 +527,7 @@
 
         function onAdminUserChange() {
             if (currentPageId === 'thongtincanhan') loadProfile();
-            else if (isEvalMenu(currentPageId)) loadEvaluation();
+            else if (isEvalMenu(currentPageId)) handleEvalMenuSelection(currentPageId);
             else if (currentPageId !== 'quanlytaikhoan') loadPageContent(currentPageId);
         }
 
@@ -524,7 +537,6 @@
                 expandedMenus = expandedMenus.filter(id => id !== menuId);
             } else {
                 expandedMenus.push(menuId);
-                // Mở tự động mục con đầu tiên khi mở menu cha (nếu chưa đang ở trong nhóm)
                 const menu = menus.find(m => m.id === menuId);
                 if (menu && menu.children && !menu.children.some(c => c.id === currentPageId)) {
                     openMenu(menu.children[0].id);
@@ -550,7 +562,6 @@
                 const div = document.createElement('div');
                 div.className = `sidebar-item flex flex-col text-sm transition-colors ${isActiveParent && !hasChildren ? 'active font-bold' : ''}`;
                 
-                // Div hiển thị tiêu đề cha
                 const parentDiv = document.createElement('div');
                 parentDiv.className = `flex items-center justify-between px-6 py-3 cursor-pointer hover:bg-black/20 ${isActiveParent ? 'bg-black/20 font-bold border-l-4 border-white' : 'border-l-4 border-transparent'}`;
                 parentDiv.onclick = () => {
@@ -561,7 +572,6 @@
                                        ${hasChildren ? `<i class="fas fa-chevron-${isExpanded ? 'down' : 'right'} text-[10px] opacity-70 transition-transform"></i>` : ''}`;
                 div.appendChild(parentDiv);
 
-                // Render nhóm con nếu có và đang mở
                 if (hasChildren && isExpanded) {
                     const childContainer = document.createElement('div');
                     childContainer.className = 'bg-black/10 flex flex-col py-1';
@@ -592,7 +602,6 @@
             let menuIcon = '';
             let isEval = isEvalMenu(menuId);
 
-            // Tìm Title và Icon tương ứng
             menus.forEach(m => {
                 if (m.id === menuId) {
                     menuTitle = m.title; menuIcon = m.icon;
@@ -627,7 +636,8 @@
             } else if (menuId === 'thongtincanhan') {
                 document.getElementById('personal-info-area').classList.remove('hidden'); loadProfile(); 
             } else if (isEval) {
-                document.getElementById('evaluation-area').classList.remove('hidden'); loadEvaluation();
+                document.getElementById('evaluation-area').classList.remove('hidden'); 
+                handleEvalMenuSelection(menuId);
             } else {
                 document.getElementById('content-editor-area').classList.remove('hidden'); loadPageContent(menuId);
             }
@@ -674,272 +684,76 @@
             html += '</tbody>'; table.innerHTML = html;
         }
 
-        // --- QUẢN LÝ ĐÁNH GIÁ CÁN BỘ (BẢNG TÍNH KPI) ---
-        
-        function handleEvidenceUpload(id) {
-            const fileInput = document.getElementById(`ev_file_${id}`);
-            const nameSpan = document.getElementById(`ev_name_${id}`);
-            const dataInput = document.getElementById(`ev_data_${id}`);
-            
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                if(file.size > 1500000) { 
-                     alert("Vui lòng chọn file minh chứng nhỏ hơn 1.5MB để đảm bảo lưu trữ trên trình duyệt web!");
-                     fileInput.value = ""; return;
-                }
-                nameSpan.textContent = file.name;
-                nameSpan.title = file.name;
-                nameSpan.classList.replace('text-gray-400', 'text-blue-600');
-                
-                const reader = new FileReader();
-                reader.onload = function(e) { dataInput.value = e.target.result; };
-                reader.readAsDataURL(file);
+        // --- QUẢN LÝ ĐÁNH GIÁ CÁN BỘ ---
+        function handleEvalMenuSelection(menuId) {
+            document.getElementById('eval-tab-danhmuc').classList.add('hidden');
+            document.getElementById('eval-tab-bangtinh').classList.add('hidden');
+            document.getElementById('eval-tab-xeploai').classList.add('hidden');
+
+            const users = JSON.parse(localStorage.getItem('users_db'));
+            const isAdmin = users[currentUser].role === 'admin';
+
+            if (menuId === 'dg_danhmuc') {
+                document.getElementById('eval-tab-danhmuc').classList.remove('hidden');
+                if (isAdmin) document.getElementById('admin-criteria-tools').classList.remove('hidden');
+                else document.getElementById('admin-criteria-tools').classList.add('hidden');
+                renderCriteriaView();
+            } else if (menuId === 'dg_bangtinh' || menuId === 'quanlydanhgia') {
+                document.getElementById('eval-tab-bangtinh').classList.remove('hidden');
+                loadEvalTableData();
+            } else if (menuId === 'dg_xeploai') {
+                document.getElementById('eval-tab-xeploai').classList.remove('hidden');
+                loadEvalResultData();
             }
         }
 
-        function calcKPI(id, base, diff) {
-            const progSelect = document.getElementById(`prog_${id}`);
-            const qualSelect = document.getElementById(`qual_${id}`);
-            const thEl = document.getElementById(`th_${id}`);
-            const qdEl = document.getElementById(`qd_${id}`);
-
-            let prog = parseFloat(progSelect.value) || 0;
-            let qual = parseFloat(qualSelect.value) || 0;
-
-            let th = base * (0.3 * prog + 0.7 * qual);
-            let qd = th * diff;
-
-            thEl.textContent = th.toFixed(2);
-            qdEl.textContent = qd.toFixed(2);
-        }
-
-        function renderEvalTable() {
-            const tbody = document.getElementById('eval-tbody');
+        // 1. Tab: Danh mục sản phẩm (View & Edit)
+        function renderCriteriaView() {
+            const tbody = document.getElementById('criteria-view-tbody');
             const criteria = getCriteriaData();
             let html = '';
-            
             criteria.forEach(group => {
                 let groupMax = group.items.reduce((sum, item) => sum + item.base, 0);
-                html += `<tr class="bg-gray-100/80"><td colspan="8" class="p-3 font-bold text-gray-800 border-b border-t border-gray-300 uppercase">${group.group} (Chuẩn: ${groupMax} điểm)</td></tr>`;
-                
+                html += `<tr class="bg-gray-100"><td colspan="3" class="p-3 font-bold text-gray-800 border-b border-t border-gray-300 uppercase">${group.group} (Chuẩn: ${groupMax}đ)</td></tr>`;
                 group.items.forEach(item => {
-                    html += `<tr class="border-b border-gray-200 hover:bg-gray-50 transition">
-                        <td class="border-r border-gray-200 p-3 pr-4">
-                            <div class="font-semibold text-gray-800">${item.text}</div>
-                        </td>
-                        <td class="border-r border-gray-200 p-2 text-center align-middle font-bold text-gray-600 text-sm">${item.base}</td>
-                        <td class="border-r border-gray-200 p-2 text-center align-middle font-bold text-gray-600 text-sm">${item.diff}</td>
-                        
-                        <td class="border-r border-gray-200 p-2 text-center align-middle">
-                            <select id="prog_${item.id}" onchange="calcKPI('${item.id}', ${item.base}, ${item.diff})" class="w-full border border-gray-300 rounded px-1 py-1.5 text-xs font-semibold text-orange-700 outline-none focus:ring-2 focus:ring-orange-400 bg-white">
-                                <option value="0">--- Chọn ---</option>
-                                <option value="1">100% (Đúng hạn)</option>
-                                <option value="0.8">80% (Chậm 1-3 ngày)</option>
-                                <option value="0.6">60% (Chậm 4-5 ngày)</option>
-                                <option value="0">0% (Chậm >5 ngày)</option>
-                            </select>
-                        </td>
-                        <td class="border-r border-gray-200 p-2 text-center align-middle">
-                            <select id="qual_${item.id}" onchange="calcKPI('${item.id}', ${item.base}, ${item.diff})" class="w-full border border-gray-300 rounded px-1 py-1.5 text-xs font-semibold text-blue-700 outline-none focus:ring-2 focus:ring-blue-400 bg-white">
-                                <option value="0">--- Chọn ---</option>
-                                <option value="1">100% (Đạt đầy đủ)</option>
-                                <option value="0.8">80% (Sửa nhỏ)</option>
-                                <option value="0.6">60% (Cơ bản)</option>
-                                <option value="0">0% (Không đạt)</option>
-                            </select>
-                        </td>
-                        
-                        <td class="border-r border-gray-200 p-2 text-center align-middle font-bold text-yellow-700 text-sm bg-yellow-50/50" id="th_${item.id}">0.00</td>
-                        <td class="border-r border-gray-200 p-2 text-center align-middle font-bold text-blue-700 text-base bg-blue-50/50" id="qd_${item.id}">0.00</td>
-                        
-                        <td class="p-2 align-middle">
-                            <div class="flex flex-col gap-1 items-start">
-                                <div class="flex items-center gap-2 w-full">
-                                    <input type="file" id="ev_file_${item.id}" class="hidden" onchange="handleEvidenceUpload('${item.id}')">
-                                    <button type="button" onclick="document.getElementById('ev_file_${item.id}').click()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs px-2 py-1.5 rounded border border-gray-300 whitespace-nowrap transition cursor-pointer">
-                                        <i class="fas fa-upload"></i> Up File
-                                    </button>
-                                    <div id="ev_name_${item.id}" class="text-xs text-gray-400 truncate w-24 font-medium" title="Chưa có file">Chưa có file</div>
-                                    <input type="hidden" id="ev_data_${item.id}" value="">
-                                </div>
-                                <div id="ev_link_${item.id}" class="hidden w-full mt-1">
-                                    <a href="#" download class="text-xs text-blue-600 hover:text-blue-800 hover:underline flex items-center font-semibold"><i class="fas fa-download mr-1"></i> Tải về</a>
-                                </div>
-                            </div>
-                        </td>
+                    html += `<tr class="border-b border-gray-200 hover:bg-gray-50">
+                        <td class="p-3 font-semibold text-gray-800">${item.text}</td>
+                        <td class="p-3 text-center text-gray-600">${item.base}</td>
+                        <td class="p-3 text-center text-red-500 font-bold">${item.diff}</td>
                     </tr>`;
                 });
             });
             tbody.innerHTML = html;
         }
 
-        function loadEvaluation() {
-            renderEvalTable();
+        function toggleEditCriteria() {
+            const viewMode = document.getElementById('criteria-view-mode');
+            const editMode = document.getElementById('criteria-edit-mode');
+            const btn = document.getElementById('btn-toggle-edit');
             
-            const users = JSON.parse(localStorage.getItem('users_db'));
-            if (users[currentUser].role === 'admin') document.getElementById('admin-criteria-tools').classList.remove('hidden');
-            else document.getElementById('admin-criteria-tools').classList.add('hidden');
-
-            document.getElementById('eval-main-view').classList.remove('hidden');
-            document.getElementById('criteria-edit-view').classList.add('hidden');
-            document.getElementById('eval-result-area').classList.add('hidden');
-
-            const targetU = getViewingUser();
-            const pagesDb = JSON.parse(localStorage.getItem('pages_db'));
-            const evalData = (pagesDb[targetU] && pagesDb[targetU]['quanlydanhgia_v2']) ? pagesDb[targetU]['quanlydanhgia_v2'] : null;
-            const criteria = getCriteriaData();
-
-            if (evalData && evalData.answers) {
-                if(evalData.lastUpdated) document.getElementById('eval-last-update').textContent = "Lần nộp cuối: " + evalData.lastUpdated;
-                else document.getElementById('eval-last-update').textContent = "";
-
-                criteria.forEach(group => {
-                    group.items.forEach(item => {
-                        if (evalData.answers[item.id]) {
-                            const ans = evalData.answers[item.id];
-                            if(document.getElementById(`prog_${item.id}`)) document.getElementById(`prog_${item.id}`).value = ans.prog;
-                            if(document.getElementById(`qual_${item.id}`)) document.getElementById(`qual_${item.id}`).value = ans.qual;
-                            calcKPI(item.id, item.base, item.diff); 
-                        }
-                        
-                        if (evalData.evidences && evalData.evidences[item.id]) {
-                            const evData = evalData.evidences[item.id];
-                            if(evData && evData.name && evData.data && document.getElementById(`ev_name_${item.id}`)) {
-                                document.getElementById(`ev_name_${item.id}`).textContent = evData.name;
-                                document.getElementById(`ev_name_${item.id}`).title = evData.name;
-                                document.getElementById(`ev_name_${item.id}`).classList.replace('text-gray-400', 'text-blue-600');
-                                document.getElementById(`ev_data_${item.id}`).value = evData.data;
-                                
-                                const linkDiv = document.getElementById(`ev_link_${item.id}`);
-                                linkDiv.classList.remove('hidden');
-                                linkDiv.querySelector('a').href = evData.data;
-                                linkDiv.querySelector('a').download = evData.name;
-                            }
-                        }
-                    });
-                });
-                
-                let currentScores = [];
-                let currentLabels = [];
-                let currentTotal = 0;
-                
-                criteria.forEach(group => {
-                    group.items.forEach(item => {
-                        let ans = evalData.answers[item.id] || {prog:0, qual:0};
-                        let th = item.base * (0.3 * ans.prog + 0.7 * ans.qual);
-                        let qd = th * item.diff;
-                        
-                        currentScores.push(qd);
-                        currentLabels.push(`TC${item.id.replace('c','')}`);
-                        currentTotal += qd;
-                    });
-                });
-                showEvalResult(currentScores, currentTotal, currentLabels);
-            }
-        }
-
-        function saveEvaluation() {
-            const targetU = getViewingUser();
-            const criteria = getCriteriaData();
-            let answers = {};
-            let evidences = {};
-            let scores = [];
-            let labels = [];
-            let totalScore = 0;
-            
-            criteria.forEach(group => {
-                group.items.forEach(item => {
-                    let prog = parseFloat(document.getElementById(`prog_${item.id}`).value) || 0;
-                    let qual = parseFloat(document.getElementById(`qual_${item.id}`).value) || 0;
-                    answers[item.id] = { prog, qual };
-                    
-                    const evName = document.getElementById(`ev_name_${item.id}`).textContent;
-                    const evData = document.getElementById(`ev_data_${item.id}`).value;
-                    if(evData) evidences[item.id] = { name: evName, data: evData };
-                    
-                    let th = item.base * (0.3 * prog + 0.7 * qual);
-                    let qd = th * item.diff;
-                    scores.push(qd);
-                    labels.push(`TC${item.id.replace('c','')}`);
-                    totalScore += qd;
-                });
-            });
-
-            let pagesDb = JSON.parse(localStorage.getItem('pages_db'));
-            if (!pagesDb[targetU]) pagesDb[targetU] = {};
-            
-            pagesDb[targetU]['quanlydanhgia_v2'] = {
-                answers, evidences, scores, labels, totalScore,
-                lastUpdated: new Date().toLocaleString('vi-VN') 
-            };
-            localStorage.setItem('pages_db', JSON.stringify(pagesDb));
-            
-            alert('Đã lưu kết quả đánh giá KPI và minh chứng thành công!');
-            loadEvaluation();
-        }
-
-        function showEvalResult(scores, total, labels) {
-            document.getElementById('eval-result-area').classList.remove('hidden');
-            const criteria = getCriteriaData();
-            
-            const finalTotal = Math.round(total * 100) / 100;
-            document.getElementById('eval-score').textContent = finalTotal;
-            
-            const rankEl = document.getElementById('eval-rank');
-            if (finalTotal >= 90) {
-                rankEl.textContent = 'Xếp loại: Hoàn thành xuất sắc';
-                rankEl.className = 'text-sm font-bold px-4 py-2.5 rounded-full border border-green-300 bg-green-50 text-green-700 w-full uppercase shadow-inner mt-4 block';
-            } else if (finalTotal >= 80) {
-                rankEl.textContent = 'Xếp loại: Hoàn thành tốt';
-                rankEl.className = 'text-sm font-bold px-4 py-2.5 rounded-full border border-blue-300 bg-blue-50 text-blue-700 w-full uppercase shadow-inner mt-4 block';
-            } else if (finalTotal >= 65) {
-                rankEl.textContent = 'Xếp loại: Hoàn thành';
-                rankEl.className = 'text-sm font-bold px-4 py-2.5 rounded-full border border-yellow-300 bg-yellow-50 text-yellow-700 w-full uppercase shadow-inner mt-4 block';
+            if (viewMode.classList.contains('hidden')) {
+                viewMode.classList.remove('hidden');
+                editMode.classList.add('hidden');
+                btn.innerHTML = '<i class="fas fa-edit mr-2"></i> Chỉnh sửa bộ tiêu chí';
+                btn.classList.replace('bg-gray-500', 'bg-indigo-600');
+                btn.classList.replace('hover:bg-gray-600', 'hover:bg-indigo-700');
             } else {
-                rankEl.textContent = 'Xếp loại: Không hoàn thành';
-                rankEl.className = 'text-sm font-bold px-4 py-2.5 rounded-full border border-red-300 bg-red-50 text-red-700 w-full uppercase shadow-inner mt-4 block';
+                viewMode.classList.add('hidden');
+                editMode.classList.remove('hidden');
+                btn.innerHTML = '<i class="fas fa-times mr-2"></i> Đóng chỉnh sửa';
+                btn.classList.replace('bg-indigo-600', 'bg-gray-500');
+                btn.classList.replace('hover:bg-indigo-700', 'hover:bg-gray-600');
+                renderCriteriaEditor();
             }
-
-            const ctx = document.getElementById('evalChart').getContext('2d');
-            if (evalChartInstance) evalChartInstance.destroy();
-            
-            let maxScores = [];
-            criteria.forEach(g => g.items.forEach(i => maxScores.push(i.base * i.diff)));
-
-            evalChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { label: 'Điểm KPI đạt được', data: scores, borderColor: '#2563eb', backgroundColor: 'rgba(37, 99, 235, 0.1)', borderWidth: 2, pointBackgroundColor: '#ef4444', pointBorderColor: '#ffffff', pointRadius: 4, fill: true, tension: 0.2 },
-                        { label: 'Điểm quy đổi Tối đa', data: maxScores, borderColor: '#9ca3af', borderDash: [5, 5], borderWidth: 1.5, pointRadius: 0, fill: false, tension: 0 }
-                    ]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: true, max: 15, title: { display: true, text: 'Điểm KPI' } } },
-                    plugins: {
-                        legend: { display: true, position: 'top' },
-                        title: { display: true, text: 'So sánh Điểm đạt được và Điểm tối đa', font: { size: 14 } }
-                    }
-                }
-            });
         }
 
-        // --- TÍNH NĂNG CHỈNH SỬA BỘ TIÊU CHÍ (DÀNH CHO ADMIN) ---
-        function openEditCriteria() {
-            document.getElementById('eval-main-view').classList.add('hidden');
-            document.getElementById('eval-result-area').classList.add('hidden');
-            document.getElementById('criteria-edit-view').classList.remove('hidden');
-            
+        function renderCriteriaEditor() {
             const criteria = getCriteriaData();
             let html = '<table class="w-full text-sm border-collapse"><thead class="bg-indigo-100 text-indigo-800"><tr><th class="border border-indigo-200 p-2 text-left w-3/5">Tên Tiêu chí</th><th class="border border-indigo-200 p-2 w-20 text-center">Điểm Chuẩn</th><th class="border border-indigo-200 p-2 w-20 text-center">Hệ số</th></tr></thead><tbody>';
-            
             criteria.forEach((g, gIdx) => {
                 html += `<tr><td colspan="3" class="bg-gray-100 p-2 font-bold border border-gray-200 text-indigo-800">
                     Nhóm: <input type="text" id="edit_g_${gIdx}" value="${g.group}" class="w-4/5 border border-gray-300 p-1 rounded outline-none focus:ring-1 focus:ring-indigo-500">
                 </td></tr>`;
-                
                 g.items.forEach((item, iIdx) => {
                     html += `<tr class="hover:bg-gray-50">
                         <td class="border border-gray-200 p-2"><input type="text" id="edit_t_${gIdx}_${iIdx}" value="${item.text}" class="w-full border border-gray-300 p-1.5 rounded outline-none focus:ring-1 focus:ring-indigo-500"></td>
@@ -949,17 +763,7 @@
                 });
             });
             html += '</tbody></table>';
-            html += `<div class="p-4 flex justify-end gap-3 bg-gray-50 border-t border-gray-200">
-                        <button onclick="cancelEditCriteria()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded shadow">Hủy bỏ</button>
-                        <button onclick="saveEditedCriteria()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded shadow font-bold"><i class="fas fa-save mr-1"></i> Lưu Bộ Tiêu Chí</button>
-                    </div>`;
             document.getElementById('criteria-editor-container').innerHTML = html;
-        }
-
-        function cancelEditCriteria() {
-            document.getElementById('criteria-edit-view').classList.add('hidden');
-            document.getElementById('eval-main-view').classList.remove('hidden');
-            loadEvaluation(); 
         }
 
         function saveEditedCriteria() {
@@ -981,15 +785,223 @@
             });
             
             if(globalBase !== 100) {
-                alert(`Cảnh báo: Tổng 'Điểm Chuẩn' hiện tại là ${globalBase} điểm (Gốc là 100 điểm). Vui lòng lưu ý điều này sẽ ảnh hưởng đến chuẩn Xếp loại!`);
+                alert(`Cảnh báo: Tổng 'Điểm Chuẩn' hiện tại là ${globalBase} điểm (Gốc là 100 điểm). Vui lòng lưu ý điều này sẽ ảnh hưởng đến kết quả KPI!`);
             }
             
-            localStorage.setItem('kpi_criteria_db_v2', JSON.stringify(criteria));
-            alert("Đã cập nhật Bộ Tiêu Chí Đánh Giá thành công!");
-            cancelEditCriteria();
+            localStorage.setItem('kpi_criteria_db_v3', JSON.stringify(criteria));
+            alert("Đã cập nhật Bộ Tiêu Chí thành công!");
+            toggleEditCriteria();
+            renderCriteriaView();
         }
 
-        // --- 6. HỒ SƠ & MẬT KHẨU ---
+        // 2. Tab: Bảng tính KPI
+        function calcKPI(id, base, diff) {
+            const progSelect = document.getElementById(`prog_${id}`);
+            const qualSelect = document.getElementById(`qual_${id}`);
+            const thEl = document.getElementById(`th_${id}`);
+            const qdEl = document.getElementById(`qd_${id}`);
+
+            let prog = parseFloat(progSelect.value) || 0;
+            let qual = parseFloat(qualSelect.value) || 0;
+
+            let th = base * (0.3 * prog + 0.7 * qual);
+            let qd = th * diff;
+
+            thEl.textContent = th.toFixed(2);
+            qdEl.textContent = qd.toFixed(2);
+        }
+
+        function loadEvalTableData() {
+            const tbody = document.getElementById('eval-tbody');
+            const criteria = getCriteriaData();
+            let html = '';
+            
+            criteria.forEach(group => {
+                let groupMax = group.items.reduce((sum, item) => sum + item.base, 0);
+                html += `<tr class="bg-gray-100/80"><td colspan="8" class="p-3 font-bold text-gray-800 border-b border-t border-gray-300 uppercase">${group.group} (Chuẩn: ${groupMax}đ)</td></tr>`;
+                
+                group.items.forEach(item => {
+                    html += `<tr class="border-b border-gray-200 hover:bg-gray-50 transition">
+                        <td class="border-r border-gray-200 p-3 pr-4"><div class="font-semibold text-gray-800">${item.text}</div></td>
+                        <td class="border-r border-gray-200 p-2 text-center align-middle font-bold text-gray-600 text-sm">${item.base}</td>
+                        <td class="border-r border-gray-200 p-2 text-center align-middle font-bold text-gray-600 text-sm">${item.diff}</td>
+                        <td class="border-r border-gray-200 p-2 text-center align-middle">
+                            <select id="prog_${item.id}" onchange="calcKPI('${item.id}', ${item.base}, ${item.diff})" class="w-full border border-gray-300 rounded px-1 py-1.5 text-xs font-semibold text-orange-700 outline-none focus:ring-2 focus:ring-orange-400 bg-white">
+                                <option value="0">-- Chọn --</option><option value="1">100% (Đúng hạn)</option><option value="0.8">80% (Chậm 1-3 ngày)</option><option value="0.6">60% (Chậm 4-5 ngày)</option><option value="0">0% (Chậm >5 ngày)</option>
+                            </select>
+                        </td>
+                        <td class="border-r border-gray-200 p-2 text-center align-middle">
+                            <select id="qual_${item.id}" onchange="calcKPI('${item.id}', ${item.base}, ${item.diff})" class="w-full border border-gray-300 rounded px-1 py-1.5 text-xs font-semibold text-blue-700 outline-none focus:ring-2 focus:ring-blue-400 bg-white">
+                                <option value="0">-- Chọn --</option><option value="1">100% (Đạt đầy đủ)</option><option value="0.8">80% (Sửa nhỏ)</option><option value="0.6">60% (Cơ bản)</option><option value="0">0% (Không đạt)</option>
+                            </select>
+                        </td>
+                        <td class="border-r border-gray-200 p-2 text-center align-middle font-bold text-yellow-700 text-sm bg-yellow-50/50" id="th_${item.id}">0.00</td>
+                        <td class="border-r border-gray-200 p-2 text-center align-middle font-bold text-blue-700 text-base bg-blue-50/50" id="qd_${item.id}">0.00</td>
+                        <td class="p-2 align-middle">
+                            <div class="flex flex-col gap-1 items-start">
+                                <div class="flex items-center gap-2 w-full">
+                                    <input type="file" id="ev_file_${item.id}" class="hidden" onchange="handleEvidenceUpload('${item.id}')">
+                                    <button type="button" onclick="document.getElementById('ev_file_${item.id}').click()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs px-2 py-1.5 rounded border border-gray-300 whitespace-nowrap transition cursor-pointer">
+                                        <i class="fas fa-upload"></i> Tải File
+                                    </button>
+                                    <div id="ev_name_${item.id}" class="text-xs text-gray-400 truncate w-24 font-medium" title="Chưa có file">Chưa có file</div>
+                                    <input type="hidden" id="ev_data_${item.id}" value="">
+                                </div>
+                                <div id="ev_link_${item.id}" class="hidden w-full mt-1">
+                                    <a href="#" download class="text-xs text-blue-600 hover:text-blue-800 hover:underline flex items-center font-semibold"><i class="fas fa-download mr-1"></i> Tải về</a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>`;
+                });
+            });
+            tbody.innerHTML = html;
+
+            // Đổ dữ liệu đã lưu lên Form
+            const targetU = getViewingUser();
+            const pagesDb = JSON.parse(localStorage.getItem('pages_db'));
+            const evalData = (pagesDb[targetU] && pagesDb[targetU]['quanlydanhgia_v3']) ? pagesDb[targetU]['quanlydanhgia_v3'] : null;
+
+            if (evalData && evalData.answers) {
+                criteria.forEach(group => {
+                    group.items.forEach(item => {
+                        if (evalData.answers[item.id]) {
+                            const ans = evalData.answers[item.id];
+                            document.getElementById(`prog_${item.id}`).value = ans.prog;
+                            document.getElementById(`qual_${item.id}`).value = ans.qual;
+                            calcKPI(item.id, item.base, item.diff); 
+                        }
+                        if (evalData.evidences && evalData.evidences[item.id]) {
+                            const evData = evalData.evidences[item.id];
+                            if(evData && evData.name && evData.data) {
+                                document.getElementById(`ev_name_${item.id}`).textContent = evData.name;
+                                document.getElementById(`ev_name_${item.id}`).title = evData.name;
+                                document.getElementById(`ev_name_${item.id}`).classList.replace('text-gray-400', 'text-blue-600');
+                                document.getElementById(`ev_data_${item.id}`).value = evData.data;
+                                const linkDiv = document.getElementById(`ev_link_${item.id}`);
+                                linkDiv.classList.remove('hidden');
+                                linkDiv.querySelector('a').href = evData.data;
+                                linkDiv.querySelector('a').download = evData.name;
+                            }
+                        }
+                    });
+                });
+            }
+        }
+
+        function saveEvaluation() {
+            const targetU = getViewingUser();
+            const criteria = getCriteriaData();
+            let answers = {};
+            let evidences = {};
+            let scores = [];
+            let labels = [];
+            let sumQd = 0;
+            let sumMax = 0;
+            
+            criteria.forEach(group => {
+                group.items.forEach(item => {
+                    let prog = parseFloat(document.getElementById(`prog_${item.id}`).value) || 0;
+                    let qual = parseFloat(document.getElementById(`qual_${item.id}`).value) || 0;
+                    answers[item.id] = { prog, qual };
+                    
+                    const evName = document.getElementById(`ev_name_${item.id}`).textContent;
+                    const evData = document.getElementById(`ev_data_${item.id}`).value;
+                    if(evData) evidences[item.id] = { name: evName, data: evData };
+                    
+                    let th = item.base * (0.3 * prog + 0.7 * qual);
+                    let qd = th * item.diff;
+                    let maxQd = item.base * item.diff;
+                    
+                    scores.push(qd);
+                    labels.push(`TC${item.id.replace('c','')}`);
+                    sumQd += qd;
+                    sumMax += maxQd;
+                });
+            });
+
+            let pagesDb = JSON.parse(localStorage.getItem('pages_db'));
+            if (!pagesDb[targetU]) pagesDb[targetU] = {};
+            
+            let finalKpiScore = 0;
+            if(sumMax > 0) {
+                finalKpiScore = (sumQd / sumMax) * 70;
+                if(finalKpiScore > 70) finalKpiScore = 70;
+            }
+
+            pagesDb[targetU]['quanlydanhgia_v3'] = {
+                answers, evidences, scores, labels, sumQd, sumMax, finalKpiScore,
+                lastUpdated: new Date().toLocaleString('vi-VN') 
+            };
+            localStorage.setItem('pages_db', JSON.stringify(pagesDb));
+            
+            alert('Đã lưu kết quả thành công! Hệ thống sẽ chuyển sang tab Xếp loại để xem kết quả.');
+            openMenu('dg_xeploai');
+        }
+
+        // 3. Tab: Xếp Loại
+        function loadEvalResultData() {
+            const targetU = getViewingUser();
+            const pagesDb = JSON.parse(localStorage.getItem('pages_db'));
+            const evalData = (pagesDb[targetU] && pagesDb[targetU]['quanlydanhgia_v3']) ? pagesDb[targetU]['quanlydanhgia_v3'] : null;
+
+            if (evalData && evalData.scores) {
+                if(evalData.lastUpdated) document.getElementById('eval-last-update').textContent = "Lần nộp cuối: " + evalData.lastUpdated;
+                else document.getElementById('eval-last-update').textContent = "";
+                
+                const formattedKpi = Math.round(evalData.finalKpiScore * 100) / 100;
+                document.getElementById('eval-score').textContent = formattedKpi;
+                
+                const rankEl = document.getElementById('eval-rank');
+                if (formattedKpi >= 63) { 
+                    rankEl.textContent = 'Xếp loại: Hoàn thành xuất sắc';
+                    rankEl.className = 'text-sm font-bold px-4 py-2.5 rounded-full border border-green-300 bg-green-50 text-green-700 w-full uppercase shadow-inner mt-4 block';
+                } else if (formattedKpi >= 56) { 
+                    rankEl.textContent = 'Xếp loại: Hoàn thành tốt';
+                    rankEl.className = 'text-sm font-bold px-4 py-2.5 rounded-full border border-blue-300 bg-blue-50 text-blue-700 w-full uppercase shadow-inner mt-4 block';
+                } else if (formattedKpi >= 45.5) { 
+                    rankEl.textContent = 'Xếp loại: Hoàn thành';
+                    rankEl.className = 'text-sm font-bold px-4 py-2.5 rounded-full border border-yellow-300 bg-yellow-50 text-yellow-700 w-full uppercase shadow-inner mt-4 block';
+                } else {
+                    rankEl.textContent = 'Xếp loại: Không hoàn thành';
+                    rankEl.className = 'text-sm font-bold px-4 py-2.5 rounded-full border border-red-300 bg-red-50 text-red-700 w-full uppercase shadow-inner mt-4 block';
+                }
+
+                const ctx = document.getElementById('evalChart').getContext('2d');
+                if (evalChartInstance) evalChartInstance.destroy();
+                
+                const criteria = getCriteriaData();
+                let maxScoresArr = [];
+                criteria.forEach(g => g.items.forEach(i => maxScoresArr.push(i.base * i.diff)));
+
+                evalChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: evalData.labels,
+                        datasets: [
+                            { label: 'Điểm Đạt', data: evalData.scores, backgroundColor: '#3b82f6', borderRadius: 4 },
+                            { label: 'Điểm Tối đa', data: maxScoresArr, backgroundColor: '#e5e7eb', borderRadius: 4 }
+                        ]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        scales: { y: { beginAtZero: true } },
+                        plugins: {
+                            legend: { display: true, position: 'top' },
+                            title: { display: true, text: `Biểu đồ Điểm Quy Đổi theo ${evalData.labels.length} Tiêu chí`, font: { size: 14 } }
+                        }
+                    }
+                });
+            } else {
+                document.getElementById('eval-score').textContent = "0";
+                document.getElementById('eval-rank').textContent = "Chưa có dữ liệu";
+                document.getElementById('eval-rank').className = "text-sm font-bold px-4 py-2.5 rounded-full border bg-gray-100 text-gray-800 w-full uppercase shadow-inner mt-4 block";
+                document.getElementById('eval-last-update').textContent = "";
+                if (evalChartInstance) evalChartInstance.destroy();
+            }
+        }
+
+        // --- HỒ SƠ & MẬT KHẨU ---
         function loadProfile() {
             const targetU = getViewingUser();
             const users = JSON.parse(localStorage.getItem('users_db'));
@@ -1060,7 +1072,7 @@
             document.getElementById('old-pwd').value = ''; document.getElementById('new-pwd').value = '';
         }
 
-        // --- 7. LƯU DỮ LIỆU CƠ BẢN (CHUNG CHO MENU KHÁC) ---
+        // --- LƯU DỮ LIỆU CƠ BẢN (CHUNG CHO MENU KHÁC) ---
         function downloadTemplate() {
             const bom = "\uFEFF";
             let csvContent = "STT,Tên dữ liệu,Mô tả,Người phụ trách,Trạng thái\n1,Dữ liệu mẫu 1,Mô tả chi tiết,Nguyễn Văn A,Hoàn thành";
