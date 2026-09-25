@@ -1471,7 +1471,7 @@
             const evalData = (pagesDb[targetU] && pagesDb[targetU]['quanlydanhgia_v4']) ? pagesDb[targetU]['quanlydanhgia_v4'] : { finalKpiScore: 0, partA: {}, partC: 0 };
             
             const tbody = document.getElementById('self-eval-tbody'); let html = '';
-            html += `<tr class="bg-indigo-100 text-indigo-900 font-bold"><td class="p-3 uppercase">A. NHÓM TIÊU CHÍ CHUNG</td><td class="p-3 text-center">30</td><td class="p-3 text-center" id="sum_partA">0.00</td></tr>`;
+            html += `<tr class="bg-indigo-100 text-indigo-900 font-bold"><td class="p-3 uppercase">A. NHÓM TIÊU CHUNG</td><td class="p-3 text-center">30</td><td class="p-3 text-center" id="sum_partA">0.00</td></tr>`;
             partA_Criteria.forEach(g => {
                 html += `<tr class="bg-gray-50 font-bold border-t border-gray-300"><td class="p-2">${g.title}</td><td class="p-2 text-center text-gray-500">${g.max}</td><td></td></tr>`;
                 g.subs.forEach(s => {
@@ -1659,6 +1659,28 @@
             }
             if (hasData) displayArea.classList.remove('hidden'); else displayArea.classList.add('hidden');
         }
+    </script>
+
+    <!-- KHỞI TẠO FIREBASE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+        import { getStorage } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-storage.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDZZ4LP1E9QQiuJJYmTqmPSXzNa2Xtz17Y",
+            authDomain: "quanlycongviec-2f77b.firebaseapp.com",
+            projectId: "quanlycongviec-2f77b",
+            storageBucket: "quanlycongviec-2f77b.firebasestorage.app",
+            messagingSenderId: "554871842115",
+            appId: "1:554871842115:web:4cf6d5edf6a7455ea0bbf6",
+            measurementId: "G-FS4T1V29RK"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        window.db = getFirestore(app);
+        window.storage = getStorage(app);
+        console.log("Firebase đã được kết nối thành công!");
     </script>
 </body>
 </html>
