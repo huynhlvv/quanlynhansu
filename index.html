@@ -35,6 +35,11 @@
         .card-stats { border-radius: 8px; color: #fff; text-align: center; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .card-stats h3 { margin: 0; font-size: 16px; font-weight: normal; }
         .card-stats .number { font-size: 32px; font-weight: bold; margin-top: 10px; }
+        /* ===== MODULE 111 - QUẢN LÝ NỘI BỘ ===== */
+        .module111-toolbar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:16px; }
+        .module111-readonly { background:#f8fafc; border:1px solid #e2e8f0; color:#64748b; }
+        .module111-phone { color:#2563eb; font-weight:700; text-decoration:none; }
+        .module111-phone:hover { text-decoration:underline; }
     </style>
 </head>
 <body>
@@ -398,6 +403,92 @@
                         </div>
 
                         <!-- ================= CÁC KHU VỰC KHÁC CHUNG CỦA HỆ THỐNG ================= -->
+
+                        <!-- ================= TÍCH HỢP MODULE 111 ================= -->
+                        <div id="module111-area" class="hidden">
+                            <div id="module111-phonghop" class="hidden">
+                                <div class="module111-toolbar">
+                                    <button id="m111-room-add" onclick="m111OpenRoomModal()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow font-bold">
+                                        <i class="fas fa-plus mr-2"></i>Tạo phòng họp
+                                    </button>
+                                    <span id="m111-room-readonly" class="module111-readonly px-3 py-2 rounded text-sm hidden"><i class="fas fa-lock mr-1"></i>Chỉ Admin được chỉnh sửa</span>
+                                </div>
+                                <div class="overflow-x-auto bg-white rounded border shadow-sm">
+                                    <table class="data-table"><thead><tr><th>STT</th><th>Tên phòng</th><th>Trạng thái</th><th>Ngày sử dụng</th><th>Thao tác</th></tr></thead>
+                                    <tbody id="m111-tbody-rooms"></tbody></table>
+                                </div>
+                            </div>
+
+                            <div id="module111-lichhop" class="hidden">
+                                <div class="module111-toolbar">
+                                    <button id="m111-meeting-template" onclick="m111DownloadTemplate()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded shadow">
+                                        <i class="fas fa-download mr-2"></i>Tải mẫu CSV
+                                    </button>
+                                    <label id="m111-meeting-upload-wrap" class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 px-4 py-2 rounded shadow cursor-pointer">
+                                        <i class="fas fa-file-arrow-up mr-2"></i>Nhập CSV
+                                        <input id="m111-meeting-upload" type="file" accept=".csv" class="hidden" onchange="m111HandleFileUpload(this)">
+                                    </label>
+                                    <button id="m111-meeting-add" onclick="m111OpenMeetingModal()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow font-bold">
+                                        <i class="fas fa-plus mr-2"></i>Tạo lịch họp
+                                    </button>
+                                    <span id="m111-meeting-readonly" class="module111-readonly px-3 py-2 rounded text-sm hidden"><i class="fas fa-lock mr-1"></i>Chỉ Admin được chỉnh sửa</span>
+                                </div>
+                                <div class="overflow-x-auto bg-white rounded border shadow-sm">
+                                    <table class="data-table"><thead><tr><th>STT</th><th>Nội dung</th><th>Phòng họp</th><th>Bắt đầu</th><th>Kết thúc</th><th>Ngày</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+                                    <tbody id="m111-tbody-meetings"></tbody></table>
+                                </div>
+                            </div>
+
+                            <div id="module111-danhba" class="hidden">
+                                <div class="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
+                                    <i class="fas fa-circle-info mr-2"></i>Danh bạ lấy trực tiếp từ tài khoản người dùng. Nhấn vào số điện thoại để gọi trên thiết bị hỗ trợ cuộc gọi.
+                                </div>
+                                <div class="overflow-x-auto bg-white rounded border shadow-sm">
+                                    <table class="data-table"><thead><tr><th>STT</th><th>Họ và tên</th><th>Tài khoản</th><th>Chức vụ</th><th>Số điện thoại</th><th>Email</th><th>Thao tác</th></tr></thead>
+                                    <tbody id="m111-tbody-contacts"></tbody></table>
+                                </div>
+                            </div>
+
+                            <div id="module111-placeholder" class="hidden bg-white rounded border p-8 text-center text-gray-500">
+                                <i class="fas fa-tools text-3xl mb-3"></i><p>Chức năng này đang được tích hợp.</p>
+                            </div>
+                        </div>
+
+                        <!-- Modal phòng họp của module 111 -->
+                        <div id="m111-room-modal" class="fixed inset-0 z-50 hidden bg-black/50 items-center justify-center p-4">
+                            <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+                                <div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold">Thêm phòng họp</h3><button onclick="m111CloseModal('m111-room-modal')" class="text-gray-500 text-xl">&times;</button></div>
+                                <label class="block text-sm font-semibold mb-1">Tên phòng</label><input id="m111-room-name" class="w-full border rounded px-3 py-2 mb-3">
+                                <label class="block text-sm font-semibold mb-1">Trạng thái</label><select id="m111-room-status" class="w-full border rounded px-3 py-2 mb-3"><option>Sẵn sàng</option><option>Đang bảo trì</option></select>
+                                <label class="block text-sm font-semibold mb-1">Ngày sử dụng</label><input id="m111-room-date" type="date" class="w-full border rounded px-3 py-2 mb-5">
+                                <button onclick="m111SaveRoom()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded">Lưu phòng họp</button>
+                            </div>
+                        </div>
+
+                        <!-- Modal lịch họp của module 111 -->
+                        <div id="m111-meeting-modal" class="fixed inset-0 z-50 hidden bg-black/50 items-center justify-center p-4">
+                            <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-6">
+                                <div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold">Thêm lịch họp</h3><button onclick="m111CloseModal('m111-meeting-modal')" class="text-gray-500 text-xl">&times;</button></div>
+                                <label class="block text-sm font-semibold mb-1">Phòng họp</label><select id="m111-select-room" onchange="m111AutoFillDate()" class="w-full border rounded px-3 py-2 mb-3"></select>
+                                <label class="block text-sm font-semibold mb-1">Nội dung</label><textarea id="m111-meeting-content" rows="2" class="w-full border rounded px-3 py-2 mb-3"></textarea>
+                                <div class="grid grid-cols-2 gap-3"><div><label class="block text-sm font-semibold mb-1">Bắt đầu</label><input id="m111-start" type="time" class="w-full border rounded px-3 py-2"></div><div><label class="block text-sm font-semibold mb-1">Kết thúc</label><input id="m111-end" type="time" class="w-full border rounded px-3 py-2"></div></div>
+                                <label class="block text-sm font-semibold mb-1 mt-3">Ngày</label><input id="m111-date" type="date" readonly class="w-full border rounded px-3 py-2 bg-gray-100 mb-3">
+                                <label class="block text-sm font-semibold mb-1">Trạng thái</label><select id="m111-status" class="w-full border rounded px-3 py-2 mb-5"><option>Chờ duyệt</option><option>Đã duyệt</option></select>
+                                <button onclick="m111SaveMeeting()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded">Lưu lịch họp</button>
+                            </div>
+                        </div>
+
+                        <!-- Modal chỉnh sửa số điện thoại -->
+                        <div id="m111-contact-modal" class="fixed inset-0 z-50 hidden bg-black/50 items-center justify-center p-4">
+                            <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+                                <div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold">Cập nhật danh bạ</h3><button onclick="m111CloseModal('m111-contact-modal')" class="text-gray-500 text-xl">&times;</button></div>
+                                <input type="hidden" id="m111-contact-user">
+                                <p id="m111-contact-name" class="font-semibold text-gray-700 mb-3"></p>
+                                <label class="block text-sm font-semibold mb-1">Số điện thoại</label><input id="m111-contact-phone" type="tel" class="w-full border rounded px-3 py-2 mb-5" placeholder="0901234567">
+                                <button onclick="m111SaveContact()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded">Lưu số điện thoại</button>
+                            </div>
+                        </div>
+
                         <div id="content-editor-area" class="hidden">
                             <div class="mb-4">
                                 <label class="block text-gray-700 font-bold mb-2">Nội dung ghi chú / Cập nhật:</label>
@@ -771,12 +862,17 @@
             document.getElementById('evaluation-area').classList.add('hidden');
             document.getElementById('task-management-area').classList.add('hidden');
             document.getElementById('report-area').classList.add('hidden');
+            document.getElementById('module111-area').classList.add('hidden');
 
             if (menuId === 'baocaothongke') { document.getElementById('report-area').classList.remove('hidden'); loadReportData(); }
             else if (menuId === 'quanlytaikhoan') { document.getElementById('account-management-area').classList.remove('hidden'); renderUserList(); } 
             else if (menuId === 'thongtincanhan') { document.getElementById('personal-info-area').classList.remove('hidden'); loadProfile(); } 
             else if (isEvalMenu(menuId)) { document.getElementById('evaluation-area').classList.remove('hidden'); handleEvalMenuSelection(menuId); } 
             else if (isTaskMenu(menuId)) { document.getElementById('task-management-area').classList.remove('hidden'); handleTaskMenuSelection(menuId); }
+            else if (['quanlyphonghop','lichhop','quanlyphuongtien','quanlythietbi','luutrudulieu','danhba'].includes(menuId)) {
+                document.getElementById('module111-area').classList.remove('hidden');
+                m111OpenView(menuId);
+            }
             else { document.getElementById('content-editor-area').classList.remove('hidden'); loadPageContent(menuId); }
         }
 
@@ -1470,6 +1566,67 @@
             users[targetU].password = newP; localStorage.setItem('users_db', JSON.stringify(users));
             msg.textContent = isAdminResetting ? `Đã cấp lại mật khẩu mới cho ${targetU}!` : 'Đổi mật khẩu thành công!'; msg.classList.add('bg-green-100', 'text-green-700'); document.getElementById('old-pwd').value = ''; document.getElementById('new-pwd').value = '';
         }
+
+
+        // ==============================================================================
+        // MODULE 111 - TÍCH HỢP VÀ PHÂN QUYỀN ADMIN
+        // Dữ liệu được lưu riêng trong localStorage để không làm mất dữ liệu hiện có.
+        // ==============================================================================
+        const M111 = {
+            roomsKey: 'module111_rooms_v1',
+            meetingsKey: 'module111_meetings_v1'
+        };
+
+        function m111IsAdmin() {
+            const users = JSON.parse(localStorage.getItem('users_db')) || {};
+            return !!(currentUser && users[currentUser] && users[currentUser].role === 'admin');
+        }
+        function m111GetRooms() {
+            const saved = JSON.parse(localStorage.getItem(M111.roomsKey) || 'null');
+            if (saved) return saved;
+            const initial = [{id:1,name:'Phòng họp A (Tầng 1)',status:'Sẵn sàng',date:'2026-09-26'}];
+            localStorage.setItem(M111.roomsKey, JSON.stringify(initial)); return initial;
+        }
+        function m111GetMeetings() {
+            const saved = JSON.parse(localStorage.getItem(M111.meetingsKey) || 'null');
+            if (saved) return saved;
+            const initial = [{id:1,content:'Họp giao ban mẫu',roomId:1,start:'08:00',end:'10:00',date:'2026-09-26',status:'Chờ duyệt'}];
+            localStorage.setItem(M111.meetingsKey, JSON.stringify(initial)); return initial;
+        }
+        function m111SaveRooms(v){localStorage.setItem(M111.roomsKey,JSON.stringify(v));}
+        function m111SaveMeetings(v){localStorage.setItem(M111.meetingsKey,JSON.stringify(v));}
+        function m111Escape(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
+
+        function m111OpenView(id) {
+            ['module111-phonghop','module111-lichhop','module111-danhba','module111-placeholder'].forEach(x=>document.getElementById(x).classList.add('hidden'));
+            const map={quanlyphonghop:'module111-phonghop',lichhop:'module111-lichhop',danhba:'module111-danhba'};
+            const target=map[id]||'module111-placeholder';
+            document.getElementById(target).classList.remove('hidden');
+            if(id==='quanlyphonghop') m111RenderRooms();
+            if(id==='lichhop') m111RenderMeetings();
+            if(id==='danhba') m111RenderContacts();
+            const admin=m111IsAdmin();
+            ['m111-room-add','m111-meeting-add','m111-meeting-upload-wrap'].forEach(x=>{const el=document.getElementById(x);if(el)el.classList.toggle('hidden',!admin);});
+            ['m111-room-readonly','m111-meeting-readonly'].forEach(x=>{const el=document.getElementById(x);if(el)el.classList.toggle('hidden',admin);});
+        }
+        function m111RenderRooms(){
+            const rooms=m111GetRooms(), admin=m111IsAdmin(), tb=document.getElementById('m111-tbody-rooms');
+            tb.innerHTML=rooms.map((r,i)=>`<tr><td>${i+1}</td><td>${m111Escape(r.name)}</td><td>${m111Escape(r.status)}</td><td>${formatDateVN(r.date)}</td><td>${admin?`<button onclick="m111DeleteRoom(${r.id})" class="bg-red-600 text-white px-2 py-1 rounded text-xs">Xóa</button>`:'<span class="text-gray-400 text-xs">Chỉ xem</span>'}</td></tr>`).join('');
+        }
+        function m111OpenRoomModal(){if(!m111IsAdmin())return alert('Chỉ tài khoản quản trị viên mới có quyền chỉnh sửa.');document.getElementById('m111-room-modal').classList.remove('hidden');document.getElementById('m111-room-modal').classList.add('flex');}
+        function m111SaveRoom(){if(!m111IsAdmin())return alert('Bạn không có quyền chỉnh sửa.');const name=document.getElementById('m111-room-name').value.trim(),status=document.getElementById('m111-room-status').value,date=document.getElementById('m111-room-date').value;if(!name||!date)return alert('Vui lòng nhập tên phòng và ngày sử dụng.');const rooms=m111GetRooms();rooms.push({id:Date.now(),name,status,date});m111SaveRooms(rooms);m111CloseModal('m111-room-modal');m111RenderRooms();}
+        function m111DeleteRoom(id){if(!m111IsAdmin())return alert('Bạn không có quyền chỉnh sửa.');if(!confirm('Xóa phòng họp này?'))return;m111SaveRooms(m111GetRooms().filter(r=>r.id!==id));m111RenderRooms();m111RenderMeetings();}
+        function m111RenderMeetings(){const rooms=m111GetRooms(), meetings=m111GetMeetings(), admin=m111IsAdmin(),tb=document.getElementById('m111-tbody-meetings');tb.innerHTML=meetings.map((m,i)=>{const r=rooms.find(x=>String(x.id)===String(m.roomId));return `<tr><td>${i+1}</td><td>${m111Escape(m.content)}</td><td>${r?m111Escape(r.name):'<span class="text-red-600">Phòng đã xóa</span>'}</td><td>${m.start}</td><td>${m.end}</td><td>${formatDateVN(m.date)}</td><td>${m111Escape(m.status)}</td><td>${admin?`<button onclick="m111DeleteMeeting(${m.id})" class="bg-red-600 text-white px-2 py-1 rounded text-xs">Xóa</button>`:'<span class="text-gray-400 text-xs">Chỉ xem</span>'}</td></tr>`}).join('');}
+        function m111OpenMeetingModal(){if(!m111IsAdmin())return alert('Chỉ tài khoản quản trị viên mới có quyền chỉnh sửa.');const sel=document.getElementById('m111-select-room');sel.innerHTML='<option value="">-- Chọn phòng --</option>'+m111GetRooms().map(r=>`<option value="${r.id}">${m111Escape(r.name)}</option>`).join('');document.getElementById('m111-meeting-modal').classList.remove('hidden');document.getElementById('m111-meeting-modal').classList.add('flex');}
+        function m111AutoFillDate(){const r=m111GetRooms().find(x=>String(x.id)===String(document.getElementById('m111-select-room').value));document.getElementById('m111-date').value=r?r.date:'';}
+        function m111SaveMeeting(){if(!m111IsAdmin())return alert('Bạn không có quyền chỉnh sửa.');const roomId=document.getElementById('m111-select-room').value,content=document.getElementById('m111-meeting-content').value.trim(),start=document.getElementById('m111-start').value,end=document.getElementById('m111-end').value,date=document.getElementById('m111-date').value,status=document.getElementById('m111-status').value;if(!roomId||!content||!start||!end)return alert('Vui lòng điền đủ thông tin.');if(start>=end)return alert('Giờ kết thúc phải sau giờ bắt đầu.');const ms=m111GetMeetings();ms.push({id:Date.now(),content,roomId,start,end,date,status});m111SaveMeetings(ms);m111CloseModal('m111-meeting-modal');m111RenderMeetings();}
+        function m111DeleteMeeting(id){if(!m111IsAdmin())return alert('Bạn không có quyền chỉnh sửa.');if(confirm('Xóa lịch họp này?')){m111SaveMeetings(m111GetMeetings().filter(m=>m.id!==id));m111RenderMeetings();}}
+        function m111CloseModal(id){const el=document.getElementById(id);el.classList.add('hidden');el.classList.remove('flex');}
+        function m111RenderContacts(){const users=JSON.parse(localStorage.getItem('users_db'))||{},admin=m111IsAdmin(),tb=document.getElementById('m111-tbody-contacts');let i=1;tb.innerHTML=Object.entries(users).map(([u,d])=>{const phone=(d.phone||'').trim();return `<tr><td>${i++}</td><td class="font-semibold">${m111Escape(d.fullName||u)}</td><td>${m111Escape(u)}</td><td>${m111Escape(d.position||'')}</td><td>${phone?`<a class="module111-phone" href="tel:${m111Escape(phone)}"><i class="fas fa-phone mr-1"></i>${m111Escape(phone)}</a>`:'<span class="text-gray-400">Chưa cập nhật</span>'}</td><td>${d.email?`<a class="text-blue-600" href="mailto:${m111Escape(d.email)}">${m111Escape(d.email)}</a>`:''}</td><td>${admin?`<button onclick="m111EditContact('${m111Escape(u)}')" class="bg-blue-600 text-white px-2 py-1 rounded text-xs"><i class="fas fa-edit mr-1"></i>Sửa</button>`:'<span class="text-gray-400 text-xs">Chỉ xem</span>'}</td></tr>`}).join('');}
+        function m111EditContact(u){if(!m111IsAdmin())return alert('Chỉ tài khoản quản trị viên mới có quyền chỉnh sửa.');const users=JSON.parse(localStorage.getItem('users_db'))||{};if(!users[u])return;document.getElementById('m111-contact-user').value=u;document.getElementById('m111-contact-name').textContent=users[u].fullName||u;document.getElementById('m111-contact-phone').value=users[u].phone||'';document.getElementById('m111-contact-modal').classList.remove('hidden');document.getElementById('m111-contact-modal').classList.add('flex');}
+        function m111SaveContact(){if(!m111IsAdmin())return alert('Bạn không có quyền chỉnh sửa.');const u=document.getElementById('m111-contact-user').value,users=JSON.parse(localStorage.getItem('users_db'))||{};if(!users[u])return;users[u].phone=document.getElementById('m111-contact-phone').value.trim();localStorage.setItem('users_db',JSON.stringify(users));m111CloseModal('m111-contact-modal');m111RenderContacts();populateAdminDropdown();if(u===currentUser)updateHeaderName();}
+        function m111DownloadTemplate(){const csv="\uFEFFSTT,Nội dung,Phòng họp,Bắt đầu (giờ),Kết thúc (giờ),Ngày,Trạng thái\n1,Họp giao ban mẫu,Phòng họp A (Tầng 1),08:00,10:00,26/09/2026,Chờ duyệt";const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));a.download='Mau_Nhap_Lich_Hop.csv';a.click();URL.revokeObjectURL(a.href);}
+        function m111HandleFileUpload(input){if(!m111IsAdmin())return alert('Chỉ tài khoản quản trị viên mới có quyền nhập dữ liệu.');const file=input.files[0];if(!file)return;if(!file.name.toLowerCase().endsWith('.csv')){alert('Vui lòng chọn file CSV.');input.value='';return;}const reader=new FileReader();reader.onload=e=>{const rows=e.target.result.replace(/^\uFEFF/,'').split(/\r?\n/),rooms=m111GetRooms(),meetings=m111GetMeetings();let added=0;for(let i=1;i<rows.length;i++){const cols=rows[i].split(',');if(cols.length<7)continue;const dp=cols[5].trim().split('/');const date=dp.length===3?`${dp[2]}-${dp[1]}-${dp[0]}`:cols[5].trim();const rn=cols[2].trim();const room=rooms.find(r=>r.name.toLowerCase()===rn.toLowerCase());meetings.push({id:Date.now()+i,content:cols[1].trim(),roomId:room?room.id:null,start:cols[3].trim(),end:cols[4].trim(),date,status:cols[6].trim()});added++;}m111SaveMeetings(meetings);m111RenderMeetings();alert(`Đã nhập ${added} lịch họp.`);input.value='';};reader.readAsText(file);}
 
         function downloadTemplate() {
             const bom = "\uFEFF"; let csvContent = "STT,Tên dữ liệu,Mô tả,Người phụ trách,Trạng thái\n1,Dữ liệu mẫu 1,Mô tả chi tiết,Nguyễn Văn A,Hoàn thành";
